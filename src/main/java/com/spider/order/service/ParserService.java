@@ -5,6 +5,7 @@ import com.spider.order.dto.OptionDTO;
 import com.spider.order.dto.ServerRequestDTO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
@@ -101,19 +102,11 @@ public class ParserService {
                         order.indexOf("------------------------------------------") >= 0 ||
                         order.indexOf("배달팁") >= 0) { // do nothing
 
-
                 } else if (order.indexOf("+ ") >= 0) { // 메뉴 옵션 파싱
                     OptionDTO optionDTO = new OptionDTO();
                     optionDTO.setNum(String.valueOf(menuDTO.getOptionList().size() + 1));
                     // 옵션 수량, 금액 파싱
-                    if (order.length() >= 19) { //  있는 경우
-                        optionDTO.setMenu(order.substring(3, 19).trim());
-                        String[] quantityAndPrice = order.substring(19).split(" ");
-                        optionDTO.setQuantity(quantityAndPrice[0].trim());
-                        optionDTO.setPrice(quantityAndPrice[quantityAndPrice.length - 1].trim());
-                    } else {  // 없는 경우
-                        optionDTO.setMenu(order.substring(3).trim());
-                    }
+                    this.parseOption(order, optionDTO);
 
                     // 메뉴에 옵션 추가
                     menuDTO.getOptionList().add(optionDTO);
@@ -124,12 +117,8 @@ public class ParserService {
                 } else { // 메뉴 파싱
                     menuDTO = new MenuDTO();
                     menuDTO.setNum(String.valueOf(menuList.size() + 1));
-                    menuDTO.setMenu(order.substring(0, 18).trim());
-                    // 메뉴 수량, 금액 파싱
-                    String[] quantityAndPrice = order.substring(18).split(" ");
-                    menuDTO.setQuantity(quantityAndPrice[0].trim());
-                    menuDTO.setPrice(quantityAndPrice[quantityAndPrice.length - 1].trim());
                     menuDTO.setOptionList(new ArrayList<>());
+                    this.parseMenu(order, menuDTO);
                     // 메뉴 리스트에 메뉴 추가
                     menuList.add(menuDTO);
                 }
@@ -142,5 +131,45 @@ public class ParserService {
         builder.orderDate(this.decode(encodingList.get(orderNumberIndex + 1)).trim());
 
         return builder.build();
+    }
+
+    private void parseMenu(String order, MenuDTO menuDTO) {
+        List<String> menuList = new ArrayList<>();
+
+        for (String item : order.split("  ")) {
+            if (StringUtils.hasText(item.trim())) {
+                menuList.add(item.trim());
+            }
+        }
+
+        if (menuList.size() == 0) {
+            return;
+        }
+
+        menuDTO.setMenu(menuList.get(0));
+        if (menuList.size() == 3) {
+            menuDTO.setQuantity(menuList.get(1));
+            menuDTO.setPrice(menuList.get(2));
+        }
+    }
+
+    private void parseOption(String order, OptionDTO optionDTO) {
+        List<String> optionList = new ArrayList<>();
+
+        for (String item : order.split("  ")) {
+            if (StringUtils.hasText(item.trim())) {
+                optionList.add(item.trim());
+            }
+        }
+
+        if (optionList.size() == 0) {
+            return;
+        }
+
+        optionDTO.setMenu(optionList.get(0).replace(" +", "").trim());
+        if (optionList.size() == 3) {
+            optionDTO.setQuantity(optionList.get(1));
+            optionDTO.setPrice(optionList.get(2));
+        }
     }
 }
