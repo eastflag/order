@@ -17,7 +17,7 @@ import java.util.List;
 public class ParserService {
     public String checkOrderAppKind(String hexadecimal) {
         String orderAppKind = null;
-        if (hexadecimal.indexOf("1B401B2118202020202020202020202020202020B9E8B4DE20C1D6B9AEC0FCC7A5") >= 0) {
+        if (hexadecimal.indexOf("C1D6B9AEB9F8C8A33A4231") >= 0) { // 주문번호:B1
             orderAppKind = "BM";
         }
 
@@ -48,13 +48,18 @@ public class ParserService {
         // 40: @
         // 21: !
         // 18: 위로 화살표
+        // 45: E
         // 20: 스페이스
         // 0A0D: 엔터
-        // 배민 ---------------------------------------------------
-        hexadecimal = hexadecimal.replace("1B401B2118", "");
-        hexadecimal = hexadecimal.replace("1B21001B2118", "");
-        hexadecimal = hexadecimal.replace("1B2100", "");
-        hexadecimal = hexadecimal.replace("1B2118", "");
+
+        hexadecimal = hexadecimal.replace("1B21001D2400001D7630302C0004000A0D", ""); // 구배민
+        hexadecimal = hexadecimal.replace("1B21001B2118", ""); // 신배민
+        hexadecimal = hexadecimal.replace("1B401B2118", "");   // 신배민
+        hexadecimal = hexadecimal.replace("1B2100", "");       // 신배민
+        hexadecimal = hexadecimal.replace("1B2118", "");       // 신배민
+        hexadecimal = hexadecimal.replace("1B4500", "");       // 구배민
+        hexadecimal = hexadecimal.replace("1B4501", "");       // 구배민
+        hexadecimal = hexadecimal.replace("1B40", "");         // 구배민
 
         int len = hexadecimal.length();
         byte[] ans = new byte[len / 2];
@@ -84,6 +89,10 @@ public class ParserService {
         for (String encoded : encodingList) {
             String order = this.decode(encoded);
 
+            System.out.println("decoded: " + order);
+            System.out.println("encoded: " + encoded);
+            System.out.println("encoded length: " + encoded.length());
+
             // 주문번호 파싱
             if (order.indexOf("주문번호:") >= 0) {
                 builder.orderNumber(order.replace("주문번호:", "").trim());
@@ -95,9 +104,6 @@ public class ParserService {
                 menuList = new ArrayList<>();
             }
             if (menuList != null) {
-                System.out.println("decoded: " + order);
-                System.out.println("encoded: " + encoded);
-                System.out.println("encoded length: " + encoded.length());
                 if (order.indexOf("메뉴명                     수량       금액") >= 0 ||
                         order.indexOf("------------------------------------------") >= 0 ||
                         order.indexOf("배달팁") >= 0) { // do nothing
