@@ -15,10 +15,26 @@ import java.util.List;
 @Service
 @Slf4j
 public class ParserService {
+
     public String checkOrderAppKind(String hexadecimal) {
         String orderAppKind = null;
-        if (hexadecimal.indexOf("C1D6B9AEB9F8C8A33A4231") >= 0) { // 주문번호:B1
-            orderAppKind = "BM";
+
+        if (hexadecimal.indexOf("B9E8B9CE3120C1D6B9AEC0FCC7A5") >= 0) { // 배민1 주문전표, 신배민-배민원
+            orderAppKind = "BM_one_new";
+        } else if (hexadecimal.indexOf("B9E8B9CE31C1D6B9AE") >= 0) { // 배민1주문, 구배민-배민원
+            orderAppKind = "BM_one_old";
+        } else if (hexadecimal.indexOf("C1D6B9AEB9F8C8A33A4231") >= 0) { // 주문번호:B1
+            if (hexadecimal.indexOf("B9E8B4DE20C1D6B9AEC0FCC7A5") >= 0) { // 배달 주문전표, 신배민/배달
+                orderAppKind = "BM_new_del";
+            } else if (hexadecimal.indexOf("B9E8B4DE20C1D6B9AEC0FCC7A5") >= 0) { // 포장 주문전표, 신배민/포장
+                orderAppKind = "BM_new_wrap";
+            } else if (hexadecimal.indexOf("C6F7C0E520C1A2BCF6B9F8C8A3") >= 0) { // 포장 접수번호, 구배민/포장
+                orderAppKind = "BM_old_wrap";
+            } else {
+                orderAppKind = "BM_old_del";
+            }
+        } else if (hexadecimal.indexOf("") >= 0) { // 주문번호:B1
+            orderAppKind = "BM_one_old";
         }
 
         return orderAppKind;
@@ -28,6 +44,37 @@ public class ParserService {
         List<String> encodedList = Arrays.asList(hexadecimal.split("0A0D"));
 
         return encodedList;
+    }
+
+    public ServerRequestDTO parse(List<String> encodingList, String orderAppKind) {
+        ServerRequestDTO serverRequestDTO = null;
+
+        switch (orderAppKind) {
+            case "BM_one_new":
+                serverRequestDTO = parseBM_one_new(encodingList);
+                break;
+            case "BM_one_old":
+                serverRequestDTO = parseBM_one_old(encodingList);
+                break;
+            case "BM_new_del":
+                serverRequestDTO = parseBM_new_del(encodingList);
+                break;
+            case "BM_new_wrap":
+                serverRequestDTO = parseBM_new_wrap(encodingList);
+                break;
+            case "BM_old_del":
+                serverRequestDTO = parseBM_old_del(encodingList);
+                break;
+            case "BM_old_wrap":
+                serverRequestDTO = parseBM_old_wrap(encodingList);
+                break;
+        }
+        
+        if (serverRequestDTO != null) {
+            serverRequestDTO.setOrderAppKind(orderAppKind.substring(0, 2));
+        }
+
+        return serverRequestDTO;
     }
 
 /*    public List<String> splitAndDecode(String hexadecimal) {
@@ -53,13 +100,14 @@ public class ParserService {
         // 0A0D: 엔터
 
         hexadecimal = hexadecimal.replace("1B21001D2400001D7630302C0004000A0D", ""); // 구배민
+        hexadecimal = hexadecimal.replace("1B401D427920", ""); // 구배민
         hexadecimal = hexadecimal.replace("1B21001B2118", ""); // 신배민
         hexadecimal = hexadecimal.replace("1B401B2118", "");   // 신배민
-        hexadecimal = hexadecimal.replace("1B2100", "");       // 신배민
-        hexadecimal = hexadecimal.replace("1B2118", "");       // 신배민
+        hexadecimal = hexadecimal.replace("1B2100", "");       // 신배민: 일반텍스트
+        hexadecimal = hexadecimal.replace("1B2118", "");       // 신배민: 인쇄 모드 설정
         hexadecimal = hexadecimal.replace("1B4500", "");       // 구배민
         hexadecimal = hexadecimal.replace("1B4501", "");       // 구배민
-        hexadecimal = hexadecimal.replace("1B40", "");         // 구배민
+        hexadecimal = hexadecimal.replace("1B40", "");         // 구배민: 프린트 초기화
 
         int len = hexadecimal.length();
         byte[] ans = new byte[len / 2];
@@ -79,7 +127,8 @@ public class ParserService {
         return result;
     }
 
-    public ServerRequestDTO parseBM(List<String> encodingList) {
+
+    private ServerRequestDTO parseBM_new_del(List<String> encodingList) {
         ServerRequestDTO.ServerRequestDTOBuilder builder = ServerRequestDTO.builder();
         int orderNumberIndex = -1;
         ArrayList<MenuDTO> menuList = null;
@@ -137,6 +186,26 @@ public class ParserService {
         builder.orderDate(this.decode(encodingList.get(orderNumberIndex + 1)).trim());
 
         return builder.build();
+    }
+
+    private ServerRequestDTO parseBM_new_wrap(List<String> encodingList) {
+        return null;
+    }
+
+    private ServerRequestDTO parseBM_old_del(List<String> encodingList) {
+        return null;
+    }
+
+    private ServerRequestDTO parseBM_old_wrap(List<String> encodingList) {
+        return null;
+    }
+
+    private ServerRequestDTO parseBM_one_new(List<String> encodingList) {
+        return null;
+    }
+
+    private ServerRequestDTO parseBM_one_old(List<String> encodingList) {
+        return null;
     }
 
     private void parseMenu(String order, MenuDTO menuDTO) {
