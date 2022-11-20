@@ -69,7 +69,7 @@ public class ParserService {
                 serverRequestDTO = parseBM_old_wrap(encodingList);
                 break;
         }
-        
+
         if (serverRequestDTO != null) {
             serverRequestDTO.setOrderAppKind(orderAppKind.substring(0, 2));
         }
@@ -128,9 +128,12 @@ public class ParserService {
     }
 
 
+    // 신배민 - 배달
     private ServerRequestDTO parseBM_new_del(List<String> encodingList) {
         ServerRequestDTO.ServerRequestDTOBuilder builder = ServerRequestDTO.builder();
         int orderNumberIndex = -1;
+        int addressIndex = -1;
+        int phoneIndex = -1;
         ArrayList<MenuDTO> menuList = null;
         MenuDTO menuDTO = null;
 
@@ -146,6 +149,40 @@ public class ParserService {
             if (order.indexOf("주문번호:") >= 0) {
                 builder.orderNumber(order.replace("주문번호:", "").trim());
                 orderNumberIndex = index;
+            }
+
+            // 결제방식 파싱
+            if (order.indexOf("결제방식") >= 0) {
+                builder.orderPayKind(order.replace("결제방식", "").trim());
+            }
+
+            // 배달팁 파싱
+            if (order.indexOf("배달팁") >= 0) {
+                builder.orderFee(order.replace("배달팁", "").trim());
+            }
+
+            // 합계 파싱
+            if (order.indexOf("합계(") >= 0) {
+                String[] splitOrders = order.split("  ");
+                builder.orderSum(splitOrders[splitOrders.length - 1]);
+            }
+
+            // 가게 요청 사항
+            if (order.indexOf("가게 :") >= 0) {
+                builder.shopRemark(order.split(":")[1].trim());
+            }
+            // 배달 요청 사항
+            if (order.indexOf("배달 :") >= 0) {
+                builder.orderRemark(order.split(":")[1].trim());
+            }
+
+            // 주소
+            if (order.indexOf("배달주소:") >= 0) {
+                addressIndex = index;
+            }
+            // 연락처
+            if (order.indexOf("연락처:") >= 0) {
+                phoneIndex = index;
             }
 
             // 메뉴 리스트 파싱
@@ -185,6 +222,14 @@ public class ParserService {
         // 주문일자 파싱
         builder.orderDate(this.decode(encodingList.get(orderNumberIndex + 1)).trim());
 
+        // 주소 파싱
+        builder.originalJibunAddress(this.decode(encodingList.get(addressIndex + 1)).trim());
+        builder.originalRoadAddress(this.decode(encodingList.get(addressIndex + 2)).trim());
+
+        // 연락처
+        builder.orderPhone(this.decode(encodingList.get(phoneIndex + 1)).trim());
+
+        builder.orderCarryType("D"); // 배달
         return builder.build();
     }
 
@@ -241,7 +286,7 @@ public class ParserService {
             return;
         }
 
-        optionDTO.setMenu(optionList.get(0).replace(" +", "").trim());
+        optionDTO.setMenu(optionList.get(0).replace("+", "").trim());
         if (optionList.size() == 3) {
             optionDTO.setQuantity(optionList.get(1));
             optionDTO.setPrice(optionList.get(2));

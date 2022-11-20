@@ -25,6 +25,13 @@ public class OrderController {
         List<String> resultList = parserService.getSplit(hexadecimal);
 
         ServerRequestDTO serverRequestDTO = parserService.parse(resultList, orderAppKind);
+        if (serverRequestDTO != null) {
+            serverRequestDTO.setOrderSeq(agentRequestDTO.getOrderSeq());
+            serverRequestDTO.setClientId(agentRequestDTO.getClientId());
+            serverRequestDTO.setClientToken(agentRequestDTO.getClientToken());
+            serverRequestDTO.setServiceProvider(agentRequestDTO.getServiceProvider());
+            serverRequestDTO.setClientName(agentRequestDTO.getClientName());
+        }
 
         return serverRequestDTO;
     }
