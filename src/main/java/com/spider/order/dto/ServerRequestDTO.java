@@ -84,7 +84,7 @@ public class ServerRequestDTO {
     private String shopRemark;            // "",                     // 요청사항 –
 
     @JsonProperty("OrderMenu")
-    private String jorderMenu;            // "",                     // 요청사항 –
+    private String orderMenu;            // "",                     // 요청사항 –
 
     @JsonProperty("IngredientOrigins")
     private String ingredientOrigins;

@@ -136,6 +136,7 @@ public class ParserService {
         int phoneIndex = -1;
         ArrayList<MenuDTO> menuList = null;
         MenuDTO menuDTO = null;
+        String orderMenu = "";
 
         int index = 0;
         for (String encoded : encodingList) {
@@ -195,6 +196,7 @@ public class ParserService {
                         order.indexOf("배달팁") >= 0) { // do nothing
 
                 } else if (order.indexOf("+ ") >= 0) { // 메뉴 옵션 파싱
+                    orderMenu += order; // 원본 메뉴
                     OptionDTO optionDTO = new OptionDTO();
                     optionDTO.setNum(String.valueOf(menuDTO.getOptionList().size() + 1));
                     // 옵션 수량, 금액 파싱
@@ -206,7 +208,11 @@ public class ParserService {
                     builder.orderMenuList(menuList);
                     menuDTO = null;
                     menuList = null;
+                } else if (order.startsWith("    ")) { // 메뉴가 개행 된경우: 수량, 가격이 한줄 아래로 밀린다.
+                    orderMenu += order;
+                    this.parseMenu(order, menuDTO);
                 } else { // 메뉴 파싱
+                    orderMenu += order; // 원본 메뉴
                     menuDTO = new MenuDTO();
                     menuDTO.setNum(String.valueOf(menuList.size() + 1));
                     menuDTO.setOptionList(new ArrayList<>());
@@ -228,6 +234,9 @@ public class ParserService {
 
         // 연락처
         builder.orderPhone(this.decode(encodingList.get(phoneIndex + 1)).trim());
+
+        // 원본 메뉴
+        builder.orderMenu(orderMenu);
 
         builder.orderCarryType("D"); // 배달
         return builder.build();
@@ -266,8 +275,15 @@ public class ParserService {
             return;
         }
 
-        menuDTO.setMenu(menuList.get(0));
+        if (menuList.size() == 1) {
+            menuDTO.setMenu(menuList.get(0));
+        }
+        if (menuList.size() == 2) {
+            menuDTO.setQuantity(menuList.get(0));
+            menuDTO.setPrice(menuList.get(1));
+        }
         if (menuList.size() == 3) {
+            menuDTO.setMenu(menuList.get(0));
             menuDTO.setQuantity(menuList.get(1));
             menuDTO.setPrice(menuList.get(2));
         }
