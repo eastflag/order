@@ -404,31 +404,42 @@ public class ParserService {
             }
 
             // 주소
+            System.out.println(originalJibunAddress);
             if (order.indexOf("배달주소 :") >= 0 && order.indexOf("배달주소 : ") < 0) {
-                originalJibunAddress = order.replace("배달주소 :", "").trim();
+                originalJibunAddress = "";
             }
             if (originalJibunAddress != null) {
-                // 지번 주소 개행분 추가
-                originalJibunAddress += order;
+                if (order.indexOf("배달주소 :") >= 0) {
+                    originalJibunAddress = order.replace("배달주소 :", "").trim();
+                } else if (order.indexOf("(도로명)") >= 0) {
+                    // 지번 주소 끝
+                    builder.originalJibunAddress(originalJibunAddress);
+                    originalJibunAddress = null;
+                } else {
+                    // 지번 주소 개행분 추가
+                    originalJibunAddress += order;
+                }
             }
             if (order.indexOf("(도로명)") >= 0) {
-                // 지번 주소 끝
-                builder.originalJibunAddress(originalJibunAddress);
-                originalJibunAddress = null;
-                // 도로명 주소 시작
-                originalRoadAddress = order.replace("(도로명)", "").trim();
+                originalRoadAddress = "";
             }
             if (originalRoadAddress != null) {
-                // 지번 주소 개행분 추가
-                originalRoadAddress += order;
+                if (order.indexOf("(도로명)") >= 0) {
+                    // 도로명 주소 시작
+                    originalRoadAddress = order.replace("(도로명)", "").trim();
+                } else if (order.indexOf("연락처") >= 0) {
+                    // 도로명 주소 끝
+                    builder.originalRoadAddress(originalRoadAddress);
+                    originalRoadAddress = null;
+                } else {
+                    // 지번 주소 개행분 추가
+                    originalRoadAddress += order;
+                }
             }
 
             // 연락처
             if (order.indexOf("연락처 :") >= 0) {
                 builder.orderPhone(order.replace("연락처 :", "").trim());
-                // 도로명 주소 끝
-                builder.originalRoadAddress(originalRoadAddress);
-                originalRoadAddress = null;
             }
 
             // 메뉴 리스트 파싱
@@ -474,10 +485,6 @@ public class ParserService {
         builder.shopRemark(this.decode(encodingList.get(shopRemarkIndex + 1)).trim());
         // 주문 요청 사항
         builder.orderRemark(this.decode(encodingList.get(orderRemarkIndex + 1)).trim());
-
-        // 주소 파싱
-        builder.originalJibunAddress(this.decode(encodingList.get(addressIndex + 1)).trim());
-        builder.originalRoadAddress(this.decode(encodingList.get(addressIndex + 2)).trim());
 
         // 원본 메뉴
         builder.orderMenu(orderMenu);
