@@ -1,0 +1,205 @@
+1B401B2118202020202020202020202020202020B9E8B4DE20C1D6B9AEC0FCC7A520202020202020202020202020200A0D1B21001B2118C1D6B9AEB9F8C8A32037494C5820202020202020202020202020202020202020202020202020202020200A0D1B21001B2118B0E1C1A6B9E6BDC420B0E1C1A6BFCFB7E1202020202020202020202020202020202020202020202020200A0D1B21002D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D0A0DB9E8B4DEC1D6BCD23A0A0D1B2118B0E6BACF20B1B8B9CCBDC320BDC5C6F2B5BF2033353320C6D2C6AEC7CFBFECBDBA20353033C8A30A0D1B2100B0E6BACF20B1B8B9CCBDC320B1B8B9CCB4EBB7CE3236B1E62031332D3520C6D2C6AEC7CFBFECBDBA20353033C8A30A0D0A0DBFACB6F4C3B33A0A0D1B21183035302D33363330322D333132320A0D1B2100BEC8BDC9B9F8C8A3B4C220C1D6B9AEC1A2BCF620C8C420C3D6B4EB2033BDC3B0A320B5BFBEC820C0AFC8BFC7D5B4CFB4D92E0A0DB0EDB0B4C1A4BAB8B8A620B9E8B4DEB8F1C0FB20BFDC20BBE7BFEBC7CFB0C5B3AA20BAB8B0FC2C20B0F8B0B3C7D220B0E6BFEC20B9FDC0FBC3B3B9FAC0BB20B9DEC0BB20BCF620C0D6BDC0B4CFB4D92E0A0D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D0A0DBFE4C3BBBBE7C7D73A2020202020202020202020202020202020202020202020202020202020202020200A0D1B2118B0A1B0D4203A20BFE4C3BBBBE7C7D720BEF8C0BD0A0D1B21001B2118B9E8B4DE203A20B9AEBED5BFA120B5CEB0ED20B3EBC5A9C7D8C1D6BCBCBFE40A0D1B21001B2118C4A3C8AFB0E63A0A0D1B21001B2118BCF6C0FAC6F7C5A9204F0A0D1B21001B2118B1E8C4A12C20B4DCB9ABC1F6204F0A0D1B21002D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D0A0DB8DEB4BAB8ED202020202020202020202020202020202020202020BCF6B7AE20202020202020B1DDBED70A0D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D0A0D1B2118B5B7B1EEBDBAB1E8B9E4202020202020202020202020202020202031202020202020202020342C3030300A0D1B21001B2118BDC5B6F3B8E920202020202020202020202020202020202020202031202020202020202020342C3030300A0D1B21001B2118B9E8B4DEC6C120202020202020202020202020202020202020202020202020202020202020332C3530300A0D1B21002D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D0A0D1B2118C7D5B0E828B0E1C1A6BFCFB7E1292020202020202020202020202020202020202020202031312C3530300A0D1B21002D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D0A0DC1D6B9AEB9F8C8A33A42314448303037494C580A0D323032322E31312E31372031313A303220202020202020202020202020202020202020200A0D200A0D200A0D200A0D200A0D1B69
+
+[영수증]
+
+@!               배달 주문전표              
+
+!!주문번호 7ILX                             
+
+!!결제방식 결제완료                         
+
+!------------------------------------------
+
+배달주소:
+
+!경북 구미시 신평동 353 팬트하우스 503호
+
+!경북 구미시 구미대로26길 13-5 팬트하우스 503호
+
+
+연락처:
+
+!050-36302-3122
+
+!안심번호는 주문접수 후 최대 3시간 동안 유효합니다.
+
+고객정보를 배달목적 외 사용하거나 보관, 공개할 경우 법적처벌을 받을 수 있습니다.
+
+------------------------------------------
+
+요청사항:                                 
+
+!가게 : 요청사항 없음
+
+!!배달 : 문앞에 두고 노크해주세요
+
+!!친환경:
+
+!!수저포크 O
+
+!!김치, 단무지 O
+
+!------------------------------------------
+
+메뉴명                     수량       금액
+
+------------------------------------------
+
+!돈까스김밥                 1         4,000
+
+!!신라면                     1         4,000
+
+!!배달팁                               3,500
+
+!------------------------------------------
+
+!합계(결제완료)                      11,500
+
+!------------------------------------------
+
+주문번호:B1DH007ILX
+
+2022.11.17 11:02                    
+
+ 
+
+ 
+
+ 
+
+ 
+
+i
+
+[영수증1 - 제어명령 제거]
+
+배달 주문전표              
+주문번호 7ILX                             
+결제방식 결제완료                         ==> OrderPayKind(사전)
+------------------------------------------
+배달주소:
+경북 구미시 신평동 353 팬트하우스 503호   ==> OriginalJibunAddress(경북 구미시 신평동 353 팬트하우스 503호), OrderJibunAddress(경북 구미시 신평동 353) 
+경북 구미시 구미대로26길 13-5 팬트하우스 503호 ==> OriginalRoadAddress(경북 구미시 구미대로26길 13-5 팬트하우스 503호), OrderRoadAddress(경북 구미시 구미대로26길 13-5) 
+==>  OrderAddressDetail(팬트하우스 503호)
+
+연락처:
+050-36302-3122
+안심번호는 주문접수 후 최대 3시간 동안 유효합니다.
+고객정보를 배달목적 외 사용하거나 보관, 공개할 경우 법적처벌을 받을 수 있습니다.
+------------------------------------------
+요청사항:                                 
+가게 : 요청사항 없음  ==> ShopRemark(가게요청사상)
+배달 : 문앞에 두고 노크해주세요  ==> OrdeRemark(배달요청사항)
+친환경:
+수저포크 O
+김치, 단무지 O
+------------------------------------------
+메뉴명                     수량       금액
+------------------------------------------
+돈까스김밥                 1         4,000
+신라면                     1         4,000
+배달팁                               3,500
+------------------------------------------
+합계(결제완료)                      11,500
+------------------------------------------
+주문번호:B1DH007ILX
+2022.11.17 11:02 ==> OrderDate(202211171102) // 같은 형식으로 변환하여 설정해야함.
+
+
+[변환된 전문]
+
+{
+  "OrderSEQ": "20221117110227490ROE",
+  "ClientID": "S210079914",
+  "ClientToken": "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJhcGkub3JkZXJwaWNrLmtyIiwiZXhwIjoxNzk1ODI5NTk2LCJqdGkiOiI3YWY0YzM3 Yy03MzVmLTQ3MDYtODI5Ny01YjE4ODBjMzUxNjgiLCJicmFuZElkIjpudWxsLCJzaG9wSWQiOiJTMjEwMDc5OTE0IiwidGF4Tm8iOiIzNTYwOTAwNzg4IiwiY2hhbm5lbCI6Ik5PTkUiLCJyaWRlciI6b nVsbCwicm9sZSI6bnVsbH0.VNEunFU052A17dIKlt4MoI50rA9EK8NSiRyXVanaoQwLqUb9uRNW9WWpv8W5Gawtawb2XuwDjUnrQ9kU3Zcb0A",
+  "ServiceProvider": "P002",
+  "ClientName": "고봉민김밥(구미 비산점)flqu",
+  "OrderAppCode": "",
+  "OrderAppKind": "BM",
+  "OrderNumber": "B1DH007ILX",
+  "OrderCarryType": "D",
+  "OriginalJibunAddress": "경북 구미시 신평 동 353 팬트하우스 503호",
+  "OriginalRoadAddress": "경북 구미시 구미대로26길 13-5 팬트하우스 503호",
+  "OrderJibunAddress": "경북 구미시 신평동 353",
+  "OrderJibunD etail": "팬트하우스 503호",
+  "OrderRoadAddress": "경북 구미시 구미대로26길 13-5",
+  "OrderRoadDetail": "팬트하우스 503호",
+  "OrderDate": "202211171102",
+  "OrderPayKin d": "사전",
+  "OrderPhone": "050363023122",
+  "OrderStore": "고봉민김밥(구미 비산점)flqu",
+  "OrderFee": "3500",
+  "OrderDiscount": "",
+  "OrderSum": "11500",
+  "OrderRemark": "문앞에 두고 노크해주세요친환경:수저포크 O김치, 단무지 O",
+  "ShopRemark": "요청사항 없음",
+  "OrderMenu": "돈까스김밥 1 4,000신라면 1 4,000",
+  "IngredientOrigins": "",
+  "OrderMenuList": [
+    {
+      "Num": "1",
+      "Menu": "돈까스김밥",
+      "Quantity": "1",
+      "Price": "4000",
+      "OptionList": [
+        
+      ]
+    },
+    {
+      "Num": "2",
+      "Menu": "신라면",
+      "Quantity": "1",
+      "Price": "4000 ",
+      "OptionList": [
+        
+      ]
+    }
+  ],
+  "HexaData": "1B401B2118202020202020202020202020202020B9E8B4DE20C1D6B9AEC0FCC7A520202020202020202020202020200A0D1B21001B2118C1D6B9AEB9F8C8A32037494C5820202020202020202020202020202020202020202020202020202020200A0D1B21001B2118B0E1C1A6B9E6BDC420B0E1C1A6BFCFB7E1202020202020202020202020202020202020202020202020200A0D1B21002D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D0A0DB9E8B4DEC1D6BCD23A0A0D1B2118B0E6BACF20B1B8B9CCBDC320BDC5C6F2B5BF2033353320C6D2C6AEC7CFBFECBDBA20353033C8A30A0D1B2100B0E6BACF20B1B8B9CCBDC320B1B8B9CCB4EBB7CE3236B1E62031332D3520C6D2C6AEC7CFBFECBDBA20353033C8A30A0D0A0DBFACB6F4C3B33A0A0D1B21183035302D33363330322D333132320A0D1B2100BEC8BDC9B9F8C8A3B4C220C1D6B9AEC1A2BCF620C8C420C3D6B4EB2033BDC3B0A320B5BFBEC820C0AFC8BFC7D5B4CFB4D92E0A0DB0EDB0B4C1A4BAB8B8A620B9E8B4DEB8F1C0FB20BFDC20BBE7BFEBC7CFB0C5B3AA20BAB8B0FC2C20B0F8B0B3C7D220B0E6BFEC20B9FDC0FBC3B3B9FAC0BB20B9DEC0BB20BCF620C0D6BDC0B4CFB4D92E0A0D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D0A0DBFE4C3BBBBE7C7D73A2020202020202020202020202020202020202020202020202020202020202020200A0D1B2118B0A1B0D4203A20BFE4C3BBBBE7C7D720BEF8C0BD0A0D1B21001B2118B9E8B4DE203A20B9AEBED5BFA120B5CEB0ED20B3EBC5A9C7D8C1D6BCBCBFE40A0D1B21001B2118C4A3C8AFB0E63A0A0D1B21001B2118BCF6C0FAC6F7C5A9204F0A0D1B21001B2118B1E8C4A12C20B4DCB9ABC1F6204F0A0D1B21002D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D0A0DB8DEB4BAB8ED202020202020202020202020202020202020202020BCF6B7AE20202020202020B1DDBED70A0D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D0A0D1B2118B5B7B1EEBDBAB1E8B9E4202020202020202020202020202020202031202020202020202020342C3030300A0D1B21001B2118BDC5B6F3B8E920202020202020202020202020202020202020202031202020202020202020342C3030300A0D1B21001B2118B9E8B4DEC6C120202020202020202020202020202020202020202020202020202020202020332C3530300A0D1B21002D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D0A0D1B2118C7D5B0E828B0E1C1A6BFCFB7E1292020202020202020202020202020202020202020202031312C3530300A0D1B21002D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D0A0DC1D6B9AEB9F8C8A33A42314448303037494C580A0D323032322E31312E31372031313A303220202020202020202020202020202020202020200A0D200A0D200A0D200A0D200A0D1B69"
+}
+
+[시험 전문]
+
+{
+    "OrderSEQ": "20221116121812375SBO",
+    "ClientID": "S210080670",
+    "ClientToken": "eyJhbGciOi",
+    "ServiceProvider": "P002",
+    "ClientName": "고봉민김밥인(광주봉선2호점)",
+    "OrderAppKind": "BM",
+    "OrderNumber": "B1DH007ILX",
+    "OrderCarryType": "D",
+    "OriginalJibunAddress": "경북 구미시 신평동 353 팬트하우스 503호",
+    "OriginalRoadAddress": "경북 구미시 구미대로26길 13-5 팬트하우스 503호",
+    "OrderJibunAddress": null,
+    "OrderRoadAddress": null,
+    "OrderAddressDetail": null,
+    "OrderDate": "2022.11.17 11:02",      ==> 202211171102
+    "OrderPayKind": "결제완료",           ==> 선결제(결제완료): '사전', 후불카드 : '카드', 후불현금 : '현금'
+    "OrderPhone": "050-36302-3122",       ==> 050363023122
+    "OrderStore": null,
+    "OrderDiscount": null,
+    "OrderFee": "3,500",                  ==> 3500
+    "DepositAmt": null,
+    "OrderSum": "11,500",
+    "OrderRemark": "문앞에 두고 노크해주세요",
+    "ShopRemark": "요청사항 없음",
+    "OrderMenu": "돈까스김밥                 1         4,000신라면                     1         4,000",
+    "IngredientOrigins": null,
+    "OrderMenuList": [
+        {
+            "Num": "1",
+            "Menu": "돈까스김밥",
+            "Quantity": "1",
+            "Price": "4,000",                  ==> 4000
+            "OptionList": []
+        },
+        {
+            "Num": "2",
+            "Menu": "신라면",
+            "Quantity": "1",
+            "Price": "4,000",                  ==> 4000
+            "OptionList": []
+        }
+    ]
+}

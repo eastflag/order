@@ -110,6 +110,8 @@ public class ParserService {
         hexadecimal = hexadecimal.replace("1B4500", "");       // 구배민
         hexadecimal = hexadecimal.replace("1B4501", "");       // 구배민
         hexadecimal = hexadecimal.replace("1B40", "");         // 구배민: 프린트 초기화
+        hexadecimal = hexadecimal.replace("1B61", "");         // 구배민: 프린트 초기화
+        hexadecimal = hexadecimal.replace("201D42", "");       // 구배민: 사전결부 여부 오른쪽 특수문자
 
         int len = hexadecimal.length();
         byte[] ans = new byte[len / 2];
@@ -1079,4 +1081,11 @@ public class ParserService {
             optionDTO.setPrice(optionList.get(2));
         }
     }
+
+    private String convertOrderDate(String orderDate) {
+        // 구배민 "2022-11-16(수) 12:17",   ==> 202211161217
+        return orderDate.substring(0, 10).replace("-", "") + orderDate.substring(14).replace(":", "");
+    }
+
+
 }
