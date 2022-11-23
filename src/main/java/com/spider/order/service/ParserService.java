@@ -684,7 +684,7 @@ public class ParserService {
         // 원본 메뉴
         builder.orderMenu(orderMenu);
 
-        builder.orderCarryType("D"); // 배달
+        builder.orderCarryType("A"); // 자체배달
         return builder.build();
     }
 
@@ -697,6 +697,7 @@ public class ParserService {
         ArrayList<MenuDTO> menuList = null;
         MenuDTO menuDTO = null;
         String orderMenu = "";
+        String ingredientOrigins = null;
 
         int index = 0;
         for (String encoded : encodingList) {
@@ -792,6 +793,21 @@ public class ParserService {
                 }
             }
 
+            // 원산지 파싱
+            if (order.indexOf("주문번호 :") >= 0) {
+                ingredientOrigins = "";
+            }
+            if (ingredientOrigins != null) {
+                if (order.indexOf("주문번호 :") >= 0 || order.indexOf("----") >= 0) {
+                    // nothing
+                } else if (encoded.indexOf("1B69") >= 0) { // 종료
+                    builder.ingredientOrigins(ingredientOrigins);
+                    ingredientOrigins = null;
+                } else {
+                    ingredientOrigins += order;
+                }
+            }
+
             ++index;
         }
 
@@ -803,7 +819,7 @@ public class ParserService {
         // 원본 메뉴
         builder.orderMenu(orderMenu);
 
-        builder.orderCarryType("D"); // 배달
+        builder.orderCarryType("A"); // 자체 배달
         return builder.build();
     }
 
@@ -899,7 +915,7 @@ public class ParserService {
         // 원본 메뉴
         builder.orderMenu(orderMenu);
 
-        builder.orderCarryType("D"); // 배달
+        builder.orderCarryType("A"); // 자체 배달
         return builder.build();
     }
 
