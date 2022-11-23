@@ -244,10 +244,10 @@ public class ParserService {
         ServerRequestDTO.ServerRequestDTOBuilder builder = ServerRequestDTO.builder();
         int orderNumberIndex = -1;
         int phoneIndex = -1;
-        int shopRemarkIndex = -1;
         ArrayList<MenuDTO> menuList = null;
         MenuDTO menuDTO = null;
         String orderMenu = "";
+        String shopRemark = null;
 
         int index = 0;
         for (String encoded : encodingList) {
@@ -262,15 +262,27 @@ public class ParserService {
                 orderNumberIndex = index;
             }
 
-            // 합계 파싱
+            // 합계 파싱 & 결제 방식
             if (order.indexOf("합계(") >= 0) {
                 String[] splitOrders = order.split("  ");
                 builder.orderSum(this.convertPrice(splitOrders[splitOrders.length - 1]));
+                // 결제방식
+                builder.orderPayKind(this.convertOrderPayKind(order));
             }
 
             // 가게 요청 사항
             if (order.indexOf("요청사항:") >= 0) {
-                shopRemarkIndex = index;
+                shopRemark = "";
+            }
+            if (shopRemark != null) {
+                if (order.indexOf("요청사항:") >= 0) {
+                    // do nothing
+                } else if (order.indexOf("----") >= 0) { // 파싱 종료
+                    builder.shopRemark(shopRemark);
+                    shopRemark = null;
+                } else {  // 파싱
+                    shopRemark += order.replace("가게 :", "").trim();
+                }
             }
 
             // 연락처
@@ -317,9 +329,6 @@ public class ParserService {
 
         // 연락처
         builder.orderPhone(this.convertOrderPhone(this.decode(encodingList.get(phoneIndex + 1)).trim()));
-
-        // 가게 요청 사항
-        builder.shopRemark(this.decode(encodingList.get(shopRemarkIndex + 1)).trim());
 
         // 원본 메뉴
         builder.orderMenu(orderMenu);
@@ -469,11 +478,10 @@ public class ParserService {
     private ServerRequestDTO parseBM_old_wrap(List<String> encodingList) {
         ServerRequestDTO.ServerRequestDTOBuilder builder = ServerRequestDTO.builder();
         String originalJibunAddress = null;
-        int shopRemarkIndex = -1;
-        int orderRemarkIndex = -1;
         ArrayList<MenuDTO> menuList = null;
         MenuDTO menuDTO = null;
         String orderMenu = "";
+        String shopRemark = null;
 
         int index = 0;
         for (String encoded : encodingList) {
@@ -493,6 +501,9 @@ public class ParserService {
             }
 
             // 결제방식 파싱
+            if (order.indexOf("사전결제 여부:") >= 0) {
+                builder.orderPayKind(this.convertOrderPayKind(order));
+            }
 
             // 합계 파싱
             if (order.indexOf("합계 :") >= 0) {
@@ -500,8 +511,18 @@ public class ParserService {
             }
 
             // 가게 요청 사항
-            if (order.indexOf("가게 요청사항:") >= 0) {
-                shopRemarkIndex = index;
+            if (order.indexOf("요청사항:") >= 0) {
+                shopRemark = "";
+            }
+            if (shopRemark != null) {
+                if (order.indexOf("요청사항:") >= 0) {
+                    // do nothing
+                } else if (order.indexOf("----") >= 0) { // 파싱 종료
+                    builder.shopRemark(shopRemark);
+                    shopRemark = null;
+                } else {  // 파싱
+                    shopRemark += order.replace("가게 :", "").trim();
+                }
             }
 
             // 주소
@@ -559,9 +580,6 @@ public class ParserService {
 
             ++index;
         }
-
-        // 가게 요청 사항
-        builder.shopRemark(this.decode(encodingList.get(shopRemarkIndex + 1)).trim());
 
         // 원본 메뉴
         builder.orderMenu(orderMenu);
@@ -1064,7 +1082,7 @@ public class ParserService {
             } else if (order.indexOf("카드") >= 0) {
                 return "카드";
             }
-        } else if (order.indexOf("결제방식") >= 0) { // 신배민
+        } else { // 신배민
             if (order.indexOf("결제완료") >= 0) {
                 return "사전";
             } else if (order.indexOf("현금") >= 0) {
