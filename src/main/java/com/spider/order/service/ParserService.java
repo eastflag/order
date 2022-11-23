@@ -148,7 +148,6 @@ public class ParserService {
 
             System.out.println("decoded: " + order);
             System.out.println("encoded: " + encoded);
-            System.out.println("encoded length: " + encoded.length());
 
             // 주문번호 파싱
             if (order.indexOf("주문번호:") >= 0) {
@@ -158,18 +157,18 @@ public class ParserService {
 
             // 결제방식 파싱
             if (order.indexOf("결제방식") >= 0) {
-                builder.orderPayKind(order.replace("결제방식", "").trim());
+                builder.orderPayKind(this.convertOrderPayKind(order));
             }
 
             // 배달팁 파싱
             if (order.indexOf("배달팁") >= 0) {
-                builder.orderFee(order.replace("배달팁", "").trim());
+                builder.orderFee(this.convertPrice(order.replace("배달팁", "").trim()));
             }
 
             // 합계 파싱
             if (order.indexOf("합계(") >= 0) {
                 String[] splitOrders = order.split("  ");
-                builder.orderSum(splitOrders[splitOrders.length - 1]);
+                builder.orderSum(this.convertPrice(splitOrders[splitOrders.length - 1]));
             }
 
             // 가게 요청 사항
@@ -225,14 +224,14 @@ public class ParserService {
         }
 
         // 주문일자 파싱
-        builder.orderDate(this.decode(encodingList.get(orderNumberIndex + 1)).trim());
+        builder.orderDate(this.convertOrderDate(this.decode(encodingList.get(orderNumberIndex + 1)).trim()));
 
         // 주소 파싱
         builder.originalJibunAddress(this.decode(encodingList.get(addressIndex + 1)).trim());
         builder.originalRoadAddress(this.decode(encodingList.get(addressIndex + 2)).trim());
 
         // 연락처
-        builder.orderPhone(this.decode(encodingList.get(phoneIndex + 1)).trim());
+        builder.orderPhone(this.convertOrderPhone(this.decode(encodingList.get(phoneIndex + 1)).trim()));
 
         // 원본 메뉴
         builder.orderMenu(orderMenu);
@@ -256,7 +255,6 @@ public class ParserService {
 
             System.out.println("decoded: " + order);
             System.out.println("encoded: " + encoded);
-            System.out.println("encoded length: " + encoded.length());
 
             // 주문번호 파싱
             if (order.indexOf("주문번호:") >= 0) {
@@ -267,7 +265,7 @@ public class ParserService {
             // 합계 파싱
             if (order.indexOf("합계(") >= 0) {
                 String[] splitOrders = order.split("  ");
-                builder.orderSum(splitOrders[splitOrders.length - 1]);
+                builder.orderSum(this.convertPrice(splitOrders[splitOrders.length - 1]));
             }
 
             // 가게 요청 사항
@@ -315,10 +313,10 @@ public class ParserService {
         }
 
         // 주문일자 파싱
-        builder.orderDate(this.decode(encodingList.get(orderNumberIndex + 1)).trim());
+        builder.orderDate(this.convertOrderDate(this.decode(encodingList.get(orderNumberIndex + 1)).trim()));
 
         // 연락처
-        builder.orderPhone(this.decode(encodingList.get(phoneIndex + 1)).trim());
+        builder.orderPhone(this.convertOrderPhone(this.decode(encodingList.get(phoneIndex + 1)).trim()));
 
         // 가게 요청 사항
         builder.shopRemark(this.decode(encodingList.get(shopRemarkIndex + 1)).trim());
@@ -576,7 +574,6 @@ public class ParserService {
         ServerRequestDTO.ServerRequestDTOBuilder builder = ServerRequestDTO.builder();
         int orderNumberIndex = -1;
         int addressIndex = -1;
-        int phoneIndex = -1;
         ArrayList<MenuDTO> menuList = null;
         MenuDTO menuDTO = null;
         String orderMenu = "";
@@ -587,7 +584,6 @@ public class ParserService {
 
             System.out.println("decoded: " + order);
             System.out.println("encoded: " + encoded);
-            System.out.println("encoded length: " + encoded.length());
 
             // 주문번호 파싱
             if (order.indexOf("주문번호:") >= 0) {
@@ -597,18 +593,18 @@ public class ParserService {
 
             // 결제방식 파싱
             if (order.indexOf("결제방식") >= 0) {
-                builder.orderPayKind(order.replace("결제방식", "").trim());
+                builder.orderPayKind(this.convertOrderPayKind(order));
             }
 
             // 배달팁 파싱
             if (order.indexOf("총 배달팁") >= 0) {
-                builder.orderFee(order.replace("총 배달팁", "").trim());
+                builder.orderFee(this.convertPrice(order.replace("총 배달팁", "").trim()));
             }
 
             // 합계 파싱
             if (order.indexOf("합계(") >= 0) {
                 String[] splitOrders = order.split("  ");
-                builder.orderSum(splitOrders[splitOrders.length - 1]);
+                builder.orderSum(this.convertPrice(splitOrders[splitOrders.length - 1]));
             }
 
             // 가게 요청 사항
@@ -662,7 +658,7 @@ public class ParserService {
         }
 
         // 주문일자 파싱
-        builder.orderDate(this.decode(encodingList.get(orderNumberIndex + 1)).trim());
+        builder.orderDate(this.convertOrderDate(this.decode(encodingList.get(orderNumberIndex + 1)).trim()));
 
         // 주소 파싱
         builder.originalJibunAddress(this.decode(encodingList.get(addressIndex + 1)).trim());
@@ -690,7 +686,6 @@ public class ParserService {
 
             System.out.println("decoded: " + order);
             System.out.println("encoded: " + encoded);
-            System.out.println("encoded length: " + encoded.length());
 
             // 주문번호 파싱
             if (order.indexOf("주문번호 :") >= 0) {
@@ -704,17 +699,17 @@ public class ParserService {
 
             // 결제방식 파싱
             if (order.indexOf("사전결제 여부:") >= 0) {
-                this.convertOrderPayKind(order);
+                builder.orderPayKind(this.convertOrderPayKind(order));
             }
 
             // 배달팁 파싱
             if (order.indexOf("총 배달팁") >= 0) {
-                builder.orderFee(this.convertOrderPayKind(order.replace("총 배달팁", "").trim()));
+                builder.orderFee(this.convertPrice(order.replace("총 배달팁", "").trim()));
             }
 
             // 합계 파싱
             if (order.indexOf("합계 :") >= 0) {
-                builder.orderSum(this.convertOrderPayKind(order.replace("합계 :", "").trim()));
+                builder.orderSum(this.convertPrice(order.replace("합계 :", "").trim()));
             }
 
             // 가게 요청 사항
@@ -808,7 +803,6 @@ public class ParserService {
 
             System.out.println("decoded: " + order);
             System.out.println("encoded: " + encoded);
-            System.out.println("encoded length: " + encoded.length());
 
             // 주문번호 파싱
             if (order.indexOf("주문번호:") >= 0) {
@@ -818,13 +812,13 @@ public class ParserService {
 
             // 결제방식 파싱
             if (order.indexOf("결제방식") >= 0) {
-                builder.orderPayKind(order.replace("결제방식", "").trim());
+                builder.orderPayKind(this.convertOrderPayKind(order));
             }
 
             // 합계 파싱
             if (order.indexOf("합계(") >= 0) {
                 String[] splitOrders = order.split("  ");
-                builder.orderSum(splitOrders[splitOrders.length - 1]);
+                builder.orderSum(this.convertPrice(splitOrders[splitOrders.length - 1]));
             }
 
             // 가게 요청 사항
@@ -876,7 +870,7 @@ public class ParserService {
         }
 
         // 주문일자 파싱
-        builder.orderDate(this.decode(encodingList.get(orderNumberIndex + 1)).trim());
+        builder.orderDate(this.convertOrderDate(this.decode(encodingList.get(orderNumberIndex + 1)).trim()));
 
         // 원산지 파싱
         builder.ingredientOrigins(this.decode(encodingList.get(orderNumberIndex + 3)).trim());
@@ -905,7 +899,6 @@ public class ParserService {
 
             System.out.println("decoded: " + order);
             System.out.println("encoded: " + encoded);
-            System.out.println("encoded length: " + encoded.length());
 
             // 주문번호 파싱
             if (order.indexOf("주문번호:") >= 0) {
@@ -918,7 +911,7 @@ public class ParserService {
             // 합계 파싱
             if (order.indexOf("합계(") >= 0) {
                 String[] splitOrders = order.split("  ");
-                builder.orderSum(splitOrders[splitOrders.length - 1]);
+                builder.orderSum(this.convertPrice(splitOrders[splitOrders.length - 1]));
             }
 
             // 가게 요청 사항
@@ -970,13 +963,13 @@ public class ParserService {
         }
 
         // 주문일자 파싱
-        builder.orderDate(this.decode(encodingList.get(orderNumberIndex + 1)).trim());
+        builder.orderDate(this.convertOrderDate(this.decode(encodingList.get(orderNumberIndex + 1)).trim()));
 
         // 원산지 파싱
         builder.ingredientOrigins(this.decode(encodingList.get(orderNumberIndex + 3)).trim());
 
         // 연락처 파싱
-        builder.orderPhone(this.decode(encodingList.get(phoneIndex + 1)).trim());
+        builder.orderPhone(this.convertOrderPhone(this.decode(encodingList.get(phoneIndex + 1)).trim()));
 
         // 원본 메뉴
         builder.orderMenu(orderMenu);
@@ -1012,7 +1005,7 @@ public class ParserService {
             newMenuDTO.setOptionList(new ArrayList<>());
             newMenuDTO.setMenu(menuParsingList.get(0));
             newMenuDTO.setQuantity(menuParsingList.get(1));
-            newMenuDTO.setPrice(menuParsingList.get(2));
+            newMenuDTO.setPrice(this.convertPrice(menuParsingList.get(2)));
             // 메뉴 리스트에 메뉴 추가
             menuList.add(newMenuDTO);
             return newMenuDTO;
@@ -1042,8 +1035,15 @@ public class ParserService {
     }
 
     private String convertOrderDate(String orderDate) {
-        // 구배민 "2022-11-16(수) 12:17",   ==> 202211161217
-        return orderDate.substring(0, 10).replace("-", "") + orderDate.substring(14).replace(":", "");
+        if (orderDate.indexOf("(") >= 0) {
+            // 구배민 "2022-11-16(수) 12:17",   ==> 202211161217
+            return orderDate.substring(0, 10).replace("-", "") + orderDate.substring(14).replace(":", "");
+        } else if (orderDate.indexOf(".") >= 0) {
+            // 신배민 "2022.11.17 11:02"
+            return orderDate.replace(".", "").replace(":", "").replace(" ", "").trim();
+        } else {
+            return "";
+        }
     }
 
     private String convertOrderPhone(String orderPhone) {
@@ -1056,10 +1056,22 @@ public class ParserService {
     }
 
     private String convertOrderPayKind(String order) {
-        if (order.indexOf("사전결제 여부: O") >= 0) {
-            return "사전";
-        } else if (order.indexOf("사전결제 여부: X") >= 0) {
-            return order.replace("사전결제 여부: X", "").replace("[고객용]", "").trim();
+        if (order.indexOf("사전결제 여부:") >= 0) { // 구배민
+            if (order.indexOf("O") >= 0) {
+                return "사전";
+            } else if (order.indexOf("현금") >= 0) {
+                return "현금";
+            } else if (order.indexOf("카드") >= 0) {
+                return "카드";
+            }
+        } else if (order.indexOf("결제방식") >= 0) { // 신배민
+            if (order.indexOf("결제완료") >= 0) {
+                return "사전";
+            } else if (order.indexOf("현금") >= 0) {
+                return "현금";
+            } else if (order.indexOf("카드") >= 0) {
+                return "카드";
+            }
         }
         return "";
     }
