@@ -198,7 +198,7 @@ public class ParserService {
                         order.indexOf("------------------------------------------") >= 0 ||
                         order.indexOf("배달팁") >= 0) { // do nothing
 
-                } else if (order.indexOf("+ ") >= 0) { // 메뉴 옵션 파싱
+                } else if (order.startsWith(" +")) { // 메뉴 옵션 파싱
                     orderMenu += order; // 원본 메뉴
                     OptionDTO optionDTO = new OptionDTO();
                     optionDTO.setNum(String.valueOf(menuDTO.getOptionList().size() + 1));
@@ -299,7 +299,7 @@ public class ParserService {
                         order.indexOf("------------------------------------------") >= 0 ||
                         order.indexOf("배달팁") >= 0) { // do nothing
 
-                } else if (order.indexOf("+ ") >= 0) { // 메뉴 옵션 파싱
+                } else if (order.startsWith(" +")) { // 메뉴 옵션 파싱
                     orderMenu += order; // 원본 메뉴
                     OptionDTO optionDTO = new OptionDTO();
                     optionDTO.setNum(String.valueOf(menuDTO.getOptionList().size() + 1));
@@ -437,7 +437,7 @@ public class ParserService {
                         order.indexOf("------------------------------------------") >= 0 ||
                         order.indexOf("배달팁") >= 0) { // do nothing
 
-                } else if (order.indexOf(" +") >= 0) { // 메뉴 옵션 파싱
+                } else if (order.startsWith(" +")) { // 메뉴 옵션 파싱
                     orderMenu += order; // 원본 메뉴
                     OptionDTO optionDTO = new OptionDTO();
                     optionDTO.setNum(String.valueOf(menuDTO.getOptionList().size() + 1));
@@ -556,7 +556,7 @@ public class ParserService {
                         order.indexOf("------------------------------------------") >= 0 ||
                         order.indexOf("배달팁") >= 0) { // do nothing
 
-                } else if (order.indexOf(" +") >= 0) { // 메뉴 옵션 파싱
+                } else if (order.startsWith(" +")) { // 메뉴 옵션 파싱
                     orderMenu += order; // 원본 메뉴
                     OptionDTO optionDTO = new OptionDTO();
                     optionDTO.setNum(String.valueOf(menuDTO.getOptionList().size() + 1));
@@ -650,7 +650,7 @@ public class ParserService {
                         order.indexOf("------------------------------------------") >= 0 ||
                         order.indexOf("배달팁") >= 0) { // do nothing
 
-                } else if (order.indexOf("+ ") >= 0) { // 메뉴 옵션 파싱
+                } else if (order.startsWith(" +")) { // 메뉴 옵션 파싱
                     orderMenu += order; // 원본 메뉴
                     OptionDTO optionDTO = new OptionDTO();
                     optionDTO.setNum(String.valueOf(menuDTO.getOptionList().size() + 1));
@@ -771,7 +771,7 @@ public class ParserService {
                         order.indexOf("------------------------------------------") >= 0 ||
                         order.indexOf("배달팁") >= 0) { // do nothing
 
-                } else if (order.indexOf(" +") >= 0) { // 메뉴 옵션 파싱
+                } else if (order.startsWith(" +")) { // 메뉴 옵션 파싱
                     orderMenu += order; // 원본 메뉴
                     OptionDTO optionDTO = new OptionDTO();
                     optionDTO.setNum(String.valueOf(menuDTO.getOptionList().size() + 1));
@@ -878,7 +878,7 @@ public class ParserService {
                         order.indexOf("------------------------------------------") >= 0 ||
                         order.indexOf("배달팁") >= 0) { // do nothing
 
-                } else if (order.indexOf("+ ") >= 0) { // 메뉴 옵션 파싱
+                } else if (order.startsWith(" +")) { // 메뉴 옵션 파싱
                     orderMenu += order; // 원본 메뉴
                     OptionDTO optionDTO = new OptionDTO();
                     optionDTO.setNum(String.valueOf(menuDTO.getOptionList().size() + 1));
@@ -971,7 +971,7 @@ public class ParserService {
                         order.indexOf("------------------------------------------") >= 0 ||
                         order.indexOf("배달팁") >= 0) { // do nothing
 
-                } else if (order.indexOf("+ ") >= 0) { // 메뉴 옵션 파싱
+                } else if (order.startsWith(" +")) { // 메뉴 옵션 파싱
                     orderMenu += order; // 원본 메뉴
                     OptionDTO optionDTO = new OptionDTO();
                     optionDTO.setNum(String.valueOf(menuDTO.getOptionList().size() + 1));
