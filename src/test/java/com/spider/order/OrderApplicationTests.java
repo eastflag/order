@@ -86,7 +86,7 @@ class OrderApplicationTests {
 
     @Test
     void test4() {
-        System.out.println("" + Integer.parseInt("1,000"));
+//        System.out.println("" + Integer.parseInt("1,000"));
 
     }
 }
