@@ -152,8 +152,8 @@ public class ParserService {
         for (String encoded : encodingList) {
             String order = this.decode(encoded);
 
-            System.out.println("decoded: " + order);
-            System.out.println("encoded: " + encoded);
+            log.info("decoded: {}", order);
+            log.info("encoded: {}", encoded);
 
             // 주문번호 파싱
             if (order.indexOf("주문번호:") >= 0) {
@@ -235,8 +235,8 @@ public class ParserService {
         for (String encoded : encodingList) {
             String order = this.decode(encoded);
 
-            System.out.println("decoded: " + order);
-            System.out.println("encoded: " + encoded);
+            log.info("decoded: {}", order);
+            log.info("encoded: {}", encoded);
 
             // 주문번호 파싱
             if (order.indexOf("주문번호:") >= 0) {
@@ -301,8 +301,8 @@ public class ParserService {
         ServerRequestDTO.ServerRequestDTOBuilder builder = ServerRequestDTO.builder();
         String originalJibunAddress = null;
         String originalRoadAddress = null;
-        int shopRemarkIndex = -1;
-        int orderRemarkIndex = -1;
+        String shopRemark = null;
+        String orderRemark = null;
         ArrayList<MenuDTO> menuList = null;
         StringBuilder orderMenu = new StringBuilder();
 
@@ -310,8 +310,8 @@ public class ParserService {
         for (String encoded : encodingList) {
             String order = this.decode(encoded);
 
-            System.out.println("decoded: " + order);
-            System.out.println("encoded: " + encoded);
+            log.info("decoded: {}", order);
+            log.info("encoded: {}", encoded);
 
             // 주문번호 파싱
             if (order.indexOf("주문번호 :") >= 0) {
@@ -338,13 +338,28 @@ public class ParserService {
                 builder.orderSum(this.convertPrice(order.replace("합계 :", "").trim()));
             }
 
-            // 가게 요청 사항
+            // 가게 요청 사항, 배달 요청 사항
             if (order.indexOf("가게 요청사항:") >= 0) {
-                shopRemarkIndex = index;
+                shopRemark = "";
             }
-            // 배달 요청 사항
-            if (order.indexOf("배달 요청사항:") >= 0) {
-                orderRemarkIndex = index;
+            if (shopRemark != null) {
+                if (order.indexOf("배달 요청사항:") >= 0) {
+                    builder.shopRemark(shopRemark);
+                    shopRemark = null;
+                    orderRemark = "";
+                } else {
+                    shopRemark += order.replace("가게 요청사항:", "").trim();
+                }
+            }
+            if (orderRemark != null) {
+                if (order.indexOf("-----") >= 0) {
+                    // do nothing
+                } else if (order.indexOf("메뉴") >= 0) {
+                    builder.orderRemark(orderRemark);
+                    orderRemark = null;
+                } else {
+                    orderRemark += order.replace("배달 요청사항: ", "").trim();
+                }
             }
 
             // 지번 주소
@@ -400,11 +415,6 @@ public class ParserService {
             ++index;
         }
 
-        // 가게 요청 사항
-        builder.shopRemark(this.decode(encodingList.get(shopRemarkIndex + 1)).trim());
-        // 주문 요청 사항
-        builder.orderRemark(this.decode(encodingList.get(orderRemarkIndex + 1)).trim());
-
         builder.orderCarryType("D"); // 배달
         return builder.build();
     }
@@ -421,8 +431,8 @@ public class ParserService {
         for (String encoded : encodingList) {
             String order = this.decode(encoded);
 
-            System.out.println("decoded: " + order);
-            System.out.println("encoded: " + encoded);
+            log.info("decoded: {}", order);
+            log.info("encoded: {}", encoded);
 
             // 주문번호 파싱
             if (order.indexOf("주문번호 :") >= 0) {
@@ -445,17 +455,15 @@ public class ParserService {
             }
 
             // 가게 요청 사항
-            if (order.indexOf("요청사항:") >= 0) {
+            if (order.indexOf("가게 요청사항:") >= 0) {
                 shopRemark = "";
             }
             if (shopRemark != null) {
-                if (order.indexOf("요청사항:") >= 0) {
-                    // do nothing
-                } else if (order.indexOf("----") >= 0) { // 파싱 종료
+                if (order.indexOf("----") >= 0) { // 파싱 종료
                     builder.shopRemark(shopRemark);
                     shopRemark = null;
                 } else {  // 파싱
-                    shopRemark += order.replace("가게 :", "").trim();
+                    shopRemark += order.replace("가게 요청사항:", "").trim();
                 }
             }
 
@@ -464,15 +472,13 @@ public class ParserService {
                 originalJibunAddress = "";
             }
             if (originalJibunAddress != null) {
-                if (order.indexOf("배달주소 :") >= 0) {
-                    originalJibunAddress = order.replace("배달주소 :", "").trim();
-                } else if (order.indexOf("연락처 :") >= 0) {
-                    // 지번 주소 끝
-                    builder.originalJibunAddress(originalJibunAddress);
+                if (order.indexOf("연락처 :") >= 0) { // 지번 주소 끝
+                    // 주문 정보는 고객의\n개인 정보 를 삭제한다.
+                    builder.originalJibunAddress(originalJibunAddress.replace("주문 정보는 고객의", "").replace("개인 정보", "").trim());
                     originalJibunAddress = null;
                 } else {
                     // 지번 주소 개행분 추가
-                    originalJibunAddress += order;
+                    originalJibunAddress += order.replace("배달주소 :", "").trim();
                 }
             }
 
@@ -510,8 +516,8 @@ public class ParserService {
         for (String encoded : encodingList) {
             String order = this.decode(encoded);
 
-            System.out.println("decoded: " + order);
-            System.out.println("encoded: " + encoded);
+            log.info("decoded: {}", order);
+            log.info("encoded: {}", encoded);
 
             // 주문번호 파싱
             if (order.indexOf("주문번호:") >= 0) {
@@ -578,9 +584,8 @@ public class ParserService {
     private ServerRequestDTO parseBM_one_old(List<String> encodingList) {
         ServerRequestDTO.ServerRequestDTOBuilder builder = ServerRequestDTO.builder();
         String originalJibunAddress = null;
-        String originalRoadAddress = null;
-        int shopRemarkIndex = -1;
-        int orderRemarkIndex = -1;
+        String shopRemark = null;
+        String orderRemark = null;
         ArrayList<MenuDTO> menuList = null;
         StringBuilder orderMenu = new StringBuilder();
         String ingredientOrigins = null;
@@ -589,8 +594,8 @@ public class ParserService {
         for (String encoded : encodingList) {
             String order = this.decode(encoded);
 
-            System.out.println("decoded: " + order);
-            System.out.println("encoded: " + encoded);
+            log.info("decoded: {}", order);
+            log.info("encoded: {}", encoded);
 
             // 주문번호 파싱
             if (order.indexOf("주문번호 :") >= 0) {
@@ -617,31 +622,43 @@ public class ParserService {
                 builder.orderSum(this.convertPrice(order.replace("합계 :", "").trim()));
             }
 
-            // 가게 요청 사항
+            // 가게 요청 사항, 배달 요청 사항
             if (order.indexOf("가게 요청사항:") >= 0) {
-                shopRemarkIndex = index;
+                shopRemark = "";
             }
-            // 배달 요청 사항
-            if (order.indexOf("배달 요청사항:") >= 0) {
-                orderRemarkIndex = index;
+            if (shopRemark != null) {
+                if (order.indexOf("배달 요청사항:") >= 0) { // 파싱 종료
+                    builder.shopRemark(shopRemark);
+                    shopRemark = null;
+                    orderRemark = "";
+                } else {
+                    shopRemark += order.replace("가게 요청사항:", "").trim();
+                }
+            }
+            if (orderRemark != null) {
+                if (order.indexOf("-----") >= 0) {
+                    // do nothing
+                } else if (order.indexOf("메뉴") >= 0) { // 파싱 종료
+                    builder.orderRemark(orderRemark);
+                    orderRemark = null;
+                } else {
+                    orderRemark += order.replace("배달 요청사항: ", "").trim();
+                }
             }
 
             // 지번 주소
             if (order.indexOf("배달주소 :") >= 0) {
-                if (builder.build().getOriginalJibunAddress() == null) {
-                    originalJibunAddress = "";
-                }
+                originalJibunAddress = "";
             }
             if (originalJibunAddress != null) {
-                if (order.indexOf("배달주소 :") >= 0) {
-                    originalJibunAddress = order.replace("배달주소 :", "").trim();
-                } else if (order.indexOf("안심번호는") >= 0) {
-                    // 지번 주소 끝
-                    builder.originalJibunAddress(originalJibunAddress);
+                if (order.indexOf("가게 요청사항:") >= 0) { // 지번 주소 끝
+                    // 주문 정보는 고객의\n개인 정보 를 삭제한다.
+                    int rightIndex = originalJibunAddress.indexOf("주문 정보는 고객의 개인 정보");
+                    builder.originalJibunAddress(originalJibunAddress.substring(0, rightIndex).trim());
                     originalJibunAddress = null;
                 } else {
                     // 지번 주소 개행분 추가
-                    originalJibunAddress += order;
+                    originalJibunAddress += order.replace("배달주소 :", "");
                 }
             }
             // 도로명 주소
@@ -677,11 +694,6 @@ public class ParserService {
             ++index;
         }
 
-        // 가게 요청 사항
-        builder.shopRemark(this.decode(encodingList.get(shopRemarkIndex + 1)).trim());
-        // 주문 요청 사항
-        builder.orderRemark(this.decode(encodingList.get(orderRemarkIndex + 1)).trim());
-
         builder.orderCarryType("A"); // 자체 배달
         return builder.build();
     }
@@ -697,8 +709,8 @@ public class ParserService {
         for (String encoded : encodingList) {
             String order = this.decode(encoded);
 
-            System.out.println("decoded: " + order);
-            System.out.println("encoded: " + encoded);
+            log.info("decoded: {}", order);
+            log.info("encoded: {}", encoded);
 
             // 주문번호 파싱
             if (order.indexOf("주문번호:") >= 0) {
@@ -769,8 +781,8 @@ public class ParserService {
         for (String encoded : encodingList) {
             String order = this.decode(encoded);
 
-            System.out.println("decoded: " + order);
-            System.out.println("encoded: " + encoded);
+            log.info("decoded: {}", order);
+            log.info("encoded: {}", encoded);
 
             // 주문번호 파싱
             if (order.indexOf("주문번호:") >= 0) {
