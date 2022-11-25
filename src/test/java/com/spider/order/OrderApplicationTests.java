@@ -51,14 +51,16 @@ class OrderApplicationTests {
 
     @Test
     void test2() {
-//        String order = Constant.order2;
-//        List<String> orderList = Arrays.asList(order.split("\n"));
-//        for(String line : orderList) {
-//            if (line.indexOf(""))
-//
-//        }
-//        ServerRequestDTO.builder()
-//                .orderAppKind("");
+        String order = "소고기(2000)";
+        int left = order.lastIndexOf("(");
+        int right = order.lastIndexOf(")");
+        String strPrice = order.substring(left + 1, right);
+        try {
+            Integer.parseInt(strPrice);
+            System.out.println("success");
+        } catch (Exception e) {
+            System.out.println("fail: " + e.getMessage());
+        }
     }
 
     @Test

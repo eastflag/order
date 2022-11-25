@@ -831,21 +831,27 @@ public class ParserService {
         if (order.indexOf("------------------------------------------") >= 0 ||
                 order.indexOf("배달팁") >= 0) { // do nothing
 
-        } else if (order.startsWith(" +")) { // 메뉴 옵션 파싱
+        } else if (order.startsWith(" +") || (order.startsWith("  ") && !order.startsWith("    "))) {
+            // 메뉴 옵션 파싱, 메뉴 수량 개행은 제외
             orderMenu.append(order); // 원본 메뉴
 
             MenuDTO menuDTO = menuList.get(menuList.size() - 1);
-            OptionDTO optionDTO = new OptionDTO();
-            optionDTO.setNum(String.valueOf(menuDTO.getOptionList().size() + 1));
-            // 옵션 수량, 금액 파싱
-            this.parseOption(order, optionDTO);
-
-            // 메뉴에 옵션 추가
-            menuDTO.getOptionList().add(optionDTO);
+            if (order.startsWith(" +")) {
+                OptionDTO optionDTO = new OptionDTO();
+                optionDTO.setNum(String.valueOf(menuDTO.getOptionList().size() + 1));
+                optionDTO.setMenu(order.replace(" +", ""));
+                this.parseOptionPrice(order, optionDTO);
+                menuDTO.getOptionList().add(optionDTO);         // 메뉴에 옵션 추가
+            } else { // 옵션 개행
+                // 마지막 option 가져오기
+                OptionDTO optionDTO = menuDTO.getOptionList().get(menuDTO.getOptionList().size() - 1);
+                optionDTO.setMenu(optionDTO.getMenu() + order.trim());
+                this.parseOptionPrice(optionDTO.getMenu(), optionDTO);
+            }
         } else if (order.indexOf("합계") >= 0) { // 메뉴 파싱 종료
             builder.orderMenuList(menuList);
             builder.orderMenu(orderMenu.toString());
-        } else { // 메뉴 파싱: 메뉴이면 menuDTO 교체, 개행이면 기존 menuDTO 사용
+        } else { // 메뉴 파싱
             orderMenu.append(order); // 원본 메뉴
             this.parseMenu(order, menuList);
         }
@@ -914,23 +920,33 @@ public class ParserService {
         }
     }
 
-    private void parseOption(String order, OptionDTO optionDTO) {
-        List<String> optionList = new ArrayList<>();
+    private void parseOptionPrice(String order, OptionDTO optionDTO) {
 
-        for (String item : order.split("  ")) {
-            if (StringUtils.hasText(item.trim())) {
-                optionList.add(item.trim());
+        // 옵션(2,000원) 에서 price 파싱
+        if (order.indexOf("(") >= 0 && order.indexOf(")") >= 0) {
+            int left = order.lastIndexOf("(");
+            int right = order.lastIndexOf(")");
+            String strPrice = this.convertPrice(order.substring(left + 1, right));
+            try {
+                int price = Integer.parseInt(strPrice);
+                optionDTO.setMenu(order.substring(0, left).replace(" +", ""));
+                optionDTO.setPrice(String.valueOf(price));
+            } catch (Exception e) {
+                // do nothing
             }
         }
 
-        if (optionList.size() == 0) {
-            return;
-        }
-
-        optionDTO.setMenu(optionList.get(0).replace("+", "").trim());
-        if (optionList.size() == 3) {
-            optionDTO.setQuantity(optionList.get(1));
-            optionDTO.setPrice(optionList.get(2));
+        // 옵션메뉴 400원 에서 price 파싱
+        if (order.endsWith("원")) {
+            int left = order.lastIndexOf(" ");
+            String strPrice = this.convertPrice(order.substring(left + 1));
+            try {
+                int price = Integer.parseInt(strPrice);
+                optionDTO.setMenu(order.substring(0, left).replace(" +", ""));
+                optionDTO.setPrice(String.valueOf(price));
+            } catch (Exception e) {
+                // do nothing
+            }
         }
     }
 
