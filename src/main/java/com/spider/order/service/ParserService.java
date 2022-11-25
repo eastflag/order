@@ -15,6 +15,13 @@ import java.util.List;
 @Service
 @Slf4j
 public class ParserService {
+    private static final int INITIAL = 0;
+    private static final int MENU = 10;       // 메뉴 (3)
+    private static final int MENU_TITLE = 11; // 메뉴 제목 (1)
+    private static final int MENU_PRICE = 12;   // 메뉴 수량, 가격 개행 (2)
+    private static final int MENU_TITLE_ADD = 13;      // 메뉴 제목 개행 (1)
+    private static final int OPTION = 20; // 옵션 (1)
+    private static final int OPTION_ADD = 21; // 옵션 개행 (1)
 
     public String checkOrderAppKind(String hexadecimal) {
         String orderAppKind = null;
@@ -139,8 +146,7 @@ public class ParserService {
         int addressIndex = -1;
         int phoneIndex = -1;
         ArrayList<MenuDTO> menuList = null;
-        MenuDTO menuDTO = null;
-        String orderMenu = "";
+        StringBuilder orderMenu = new StringBuilder();
 
         int index = 0;
         for (String encoded : encodingList) {
@@ -193,31 +199,11 @@ public class ParserService {
             if (order.indexOf("메뉴명                     수량       금액") >= 0) {
                 menuList = new ArrayList<>();
             }
-            if (menuList != null) {
-                if (order.indexOf("메뉴명                     수량       금액") >= 0 ||
-                        order.indexOf("------------------------------------------") >= 0 ||
-                        order.indexOf("배달팁") >= 0) { // do nothing
-
-                } else if (order.startsWith(" +")) { // 메뉴 옵션 파싱
-                    orderMenu += order; // 원본 메뉴
-                    OptionDTO optionDTO = new OptionDTO();
-                    optionDTO.setNum(String.valueOf(menuDTO.getOptionList().size() + 1));
-                    // 옵션 수량, 금액 파싱
-                    this.parseOption(order, optionDTO);
-
-                    // 메뉴에 옵션 추가
-                    menuDTO.getOptionList().add(optionDTO);
-                } else if (order.indexOf("합계") >= 0) { // 메뉴 파싱 종료
-                    builder.orderMenuList(menuList);
-                    menuDTO = null;
-                    menuList = null;
-                } else { // 메뉴 파싱: 메뉴이면 menuDTO 교체, 개행이면 기존 menuDTO 사용
-                    orderMenu += order; // 원본 메뉴
-                    MenuDTO newMenuDTO = this.parseMenu(order, menuDTO, menuList);
-                    if (newMenuDTO != null) {
-                        menuDTO = newMenuDTO;
-                    }
-                }
+            if (menuList != null && order.indexOf("메뉴명                     수량       금액") < 0) {
+                this.parserMenu(order, builder, menuList, orderMenu);
+            }
+            if (order.indexOf("합계") >= 0) {
+                menuList = null;
             }
 
             ++index;
@@ -233,9 +219,6 @@ public class ParserService {
         // 연락처
         builder.orderPhone(this.convertOrderPhone(this.decode(encodingList.get(phoneIndex + 1)).trim()));
 
-        // 원본 메뉴
-        builder.orderMenu(orderMenu);
-
         builder.orderCarryType("D"); // 배달
         return builder.build();
     }
@@ -245,8 +228,7 @@ public class ParserService {
         int orderNumberIndex = -1;
         int phoneIndex = -1;
         ArrayList<MenuDTO> menuList = null;
-        MenuDTO menuDTO = null;
-        String orderMenu = "";
+        StringBuilder orderMenu = new StringBuilder();
         String shopRemark = null;
 
         int index = 0;
@@ -294,31 +276,11 @@ public class ParserService {
             if (order.indexOf("메뉴명                     수량       금액") >= 0) {
                 menuList = new ArrayList<>();
             }
-            if (menuList != null) {
-                if (order.indexOf("메뉴명                     수량       금액") >= 0 ||
-                        order.indexOf("------------------------------------------") >= 0 ||
-                        order.indexOf("배달팁") >= 0) { // do nothing
-
-                } else if (order.startsWith(" +")) { // 메뉴 옵션 파싱
-                    orderMenu += order; // 원본 메뉴
-                    OptionDTO optionDTO = new OptionDTO();
-                    optionDTO.setNum(String.valueOf(menuDTO.getOptionList().size() + 1));
-                    // 옵션 수량, 금액 파싱
-                    this.parseOption(order, optionDTO);
-
-                    // 메뉴에 옵션 추가
-                    menuDTO.getOptionList().add(optionDTO);
-                } else if (order.indexOf("합계") >= 0) { // 메뉴 파싱 종료
-                    builder.orderMenuList(menuList);
-                    menuDTO = null;
-                    menuList = null;
-                } else { // 메뉴 파싱: 메뉴이면 menuDTO 교체, 개행이면 기존 menuDTO 사용
-                    orderMenu += order; // 원본 메뉴
-                    MenuDTO newMenuDTO = this.parseMenu(order, menuDTO, menuList);
-                    if (newMenuDTO != null) {
-                        menuDTO = newMenuDTO;
-                    }
-                }
+            if (menuList != null && order.indexOf("메뉴명                     수량       금액") < 0) {
+                this.parserMenu(order, builder, menuList, orderMenu);
+            }
+            if (order.indexOf("합계") >= 0) {
+                menuList = null;
             }
 
             ++index;
@@ -329,9 +291,6 @@ public class ParserService {
 
         // 연락처
         builder.orderPhone(this.convertOrderPhone(this.decode(encodingList.get(phoneIndex + 1)).trim()));
-
-        // 원본 메뉴
-        builder.orderMenu(orderMenu);
 
         builder.orderCarryType("P"); // 픽업
         return builder.build();
@@ -345,8 +304,7 @@ public class ParserService {
         int shopRemarkIndex = -1;
         int orderRemarkIndex = -1;
         ArrayList<MenuDTO> menuList = null;
-        MenuDTO menuDTO = null;
-        String orderMenu = "";
+        StringBuilder orderMenu = new StringBuilder();
 
         int index = 0;
         for (String encoded : encodingList) {
@@ -432,31 +390,11 @@ public class ParserService {
             if (order.indexOf("메뉴                        수량      금액") >= 0) {
                 menuList = new ArrayList<>();
             }
-            if (menuList != null) {
-                if (order.indexOf("메뉴                        수량      금액") >= 0 ||
-                        order.indexOf("------------------------------------------") >= 0 ||
-                        order.indexOf("배달팁") >= 0) { // do nothing
-
-                } else if (order.startsWith(" +")) { // 메뉴 옵션 파싱
-                    orderMenu += order; // 원본 메뉴
-                    OptionDTO optionDTO = new OptionDTO();
-                    optionDTO.setNum(String.valueOf(menuDTO.getOptionList().size() + 1));
-                    // 옵션 수량, 금액 파싱
-                    this.parseOption(order, optionDTO);
-
-                    // 메뉴에 옵션 추가
-                    menuDTO.getOptionList().add(optionDTO);
-                } else if (order.indexOf("합계") >= 0) { // 메뉴 파싱 종료
-                    builder.orderMenuList(menuList);
-                    menuDTO = null;
-                    menuList = null;
-                } else { // 메뉴 파싱: 메뉴이면 menuDTO 교체, 개행이면 기존 menuDTO 사용
-                    orderMenu += order; // 원본 메뉴
-                    MenuDTO newMenuDTO = this.parseMenu(order, menuDTO, menuList);
-                    if (newMenuDTO != null) {
-                        menuDTO = newMenuDTO;
-                    }
-                }
+            if (menuList != null && order.indexOf("메뉴                        수량      금액") < 0) {
+                this.parserMenu(order, builder, menuList, orderMenu);
+            }
+            if (order.indexOf("합계") >= 0) {
+                menuList = null;
             }
 
             ++index;
@@ -467,9 +405,6 @@ public class ParserService {
         // 주문 요청 사항
         builder.orderRemark(this.decode(encodingList.get(orderRemarkIndex + 1)).trim());
 
-        // 원본 메뉴
-        builder.orderMenu(orderMenu);
-
         builder.orderCarryType("D"); // 배달
         return builder.build();
     }
@@ -479,8 +414,7 @@ public class ParserService {
         ServerRequestDTO.ServerRequestDTOBuilder builder = ServerRequestDTO.builder();
         String originalJibunAddress = null;
         ArrayList<MenuDTO> menuList = null;
-        MenuDTO menuDTO = null;
-        String orderMenu = "";
+        StringBuilder orderMenu = new StringBuilder();
         String shopRemark = null;
 
         int index = 0;
@@ -551,38 +485,15 @@ public class ParserService {
             if (order.indexOf("메뉴                        수량      금액") >= 0) {
                 menuList = new ArrayList<>();
             }
-            if (menuList != null) {
-                if (order.indexOf("메뉴                        수량      금액") >= 0 ||
-                        order.indexOf("------------------------------------------") >= 0 ||
-                        order.indexOf("배달팁") >= 0) { // do nothing
-
-                } else if (order.startsWith(" +")) { // 메뉴 옵션 파싱
-                    orderMenu += order; // 원본 메뉴
-                    OptionDTO optionDTO = new OptionDTO();
-                    optionDTO.setNum(String.valueOf(menuDTO.getOptionList().size() + 1));
-                    // 옵션 수량, 금액 파싱
-                    this.parseOption(order, optionDTO);
-
-                    // 메뉴에 옵션 추가
-                    menuDTO.getOptionList().add(optionDTO);
-                } else if (order.indexOf("합계") >= 0) { // 메뉴 파싱 종료
-                    builder.orderMenuList(menuList);
-                    menuDTO = null;
-                    menuList = null;
-                } else { // 메뉴 파싱: 메뉴이면 menuDTO 교체, 개행이면 기존 menuDTO 사용
-                    orderMenu += order; // 원본 메뉴
-                    MenuDTO newMenuDTO = this.parseMenu(order, menuDTO, menuList);
-                    if (newMenuDTO != null) {
-                        menuDTO = newMenuDTO;
-                    }
-                }
+            if (menuList != null && order.indexOf("메뉴                        수량      금액") < 0) {
+                this.parserMenu(order, builder, menuList, orderMenu);
+            }
+            if (order.indexOf("합계") >= 0) {
+                menuList = null;
             }
 
             ++index;
         }
-
-        // 원본 메뉴
-        builder.orderMenu(orderMenu);
 
         builder.orderCarryType("P"); // 픽업
         return builder.build();
@@ -593,8 +504,7 @@ public class ParserService {
         int orderNumberIndex = -1;
         int addressIndex = -1;
         ArrayList<MenuDTO> menuList = null;
-        MenuDTO menuDTO = null;
-        String orderMenu = "";
+        StringBuilder orderMenu = new StringBuilder();
 
         int index = 0;
         for (String encoded : encodingList) {
@@ -645,31 +555,11 @@ public class ParserService {
             if (order.indexOf("메뉴명                     수량       금액") >= 0) {
                 menuList = new ArrayList<>();
             }
-            if (menuList != null) {
-                if (order.indexOf("메뉴명                     수량       금액") >= 0 ||
-                        order.indexOf("------------------------------------------") >= 0 ||
-                        order.indexOf("배달팁") >= 0) { // do nothing
-
-                } else if (order.startsWith(" +")) { // 메뉴 옵션 파싱
-                    orderMenu += order; // 원본 메뉴
-                    OptionDTO optionDTO = new OptionDTO();
-                    optionDTO.setNum(String.valueOf(menuDTO.getOptionList().size() + 1));
-                    // 옵션 수량, 금액 파싱
-                    this.parseOption(order, optionDTO);
-
-                    // 메뉴에 옵션 추가
-                    menuDTO.getOptionList().add(optionDTO);
-                } else if (order.indexOf("합계") >= 0) { // 메뉴 파싱 종료
-                    builder.orderMenuList(menuList);
-                    menuDTO = null;
-                    menuList = null;
-                } else { // 메뉴 파싱: 메뉴이면 menuDTO 교체, 개행이면 기존 menuDTO 사용
-                    orderMenu += order; // 원본 메뉴
-                    MenuDTO newMenuDTO = this.parseMenu(order, menuDTO, menuList);
-                    if (newMenuDTO != null) {
-                        menuDTO = newMenuDTO;
-                    }
-                }
+            if (menuList != null && order.indexOf("메뉴명                     수량       금액") < 0) {
+                this.parserMenu(order, builder, menuList, orderMenu);
+            }
+            if (order.indexOf("합계") >= 0) {
+                menuList = null;
             }
 
             ++index;
@@ -680,9 +570,6 @@ public class ParserService {
 
         // 주소 파싱
         builder.originalJibunAddress(this.decode(encodingList.get(addressIndex + 1)).trim());
-
-        // 원본 메뉴
-        builder.orderMenu(orderMenu);
 
         builder.orderCarryType("A"); // 자체배달
         return builder.build();
@@ -695,8 +582,7 @@ public class ParserService {
         int shopRemarkIndex = -1;
         int orderRemarkIndex = -1;
         ArrayList<MenuDTO> menuList = null;
-        MenuDTO menuDTO = null;
-        String orderMenu = "";
+        StringBuilder orderMenu = new StringBuilder();
         String ingredientOrigins = null;
 
         int index = 0;
@@ -766,31 +652,11 @@ public class ParserService {
             if (order.indexOf("메뉴                        수량      금액") >= 0) {
                 menuList = new ArrayList<>();
             }
-            if (menuList != null) {
-                if (order.indexOf("메뉴                        수량      금액") >= 0 ||
-                        order.indexOf("------------------------------------------") >= 0 ||
-                        order.indexOf("배달팁") >= 0) { // do nothing
-
-                } else if (order.startsWith(" +")) { // 메뉴 옵션 파싱
-                    orderMenu += order; // 원본 메뉴
-                    OptionDTO optionDTO = new OptionDTO();
-                    optionDTO.setNum(String.valueOf(menuDTO.getOptionList().size() + 1));
-                    // 옵션 수량, 금액 파싱
-                    this.parseOption(order, optionDTO);
-
-                    // 메뉴에 옵션 추가
-                    menuDTO.getOptionList().add(optionDTO);
-                } else if (order.indexOf("합계") >= 0) { // 메뉴 파싱 종료
-                    builder.orderMenuList(menuList);
-                    menuDTO = null;
-                    menuList = null;
-                } else { // 메뉴 파싱: 메뉴이면 menuDTO 교체, 개행이면 기존 menuDTO 사용
-                    orderMenu += order; // 원본 메뉴
-                    MenuDTO newMenuDTO = this.parseMenu(order, menuDTO, menuList);
-                    if (newMenuDTO != null) {
-                        menuDTO = newMenuDTO;
-                    }
-                }
+            if (menuList != null && order.indexOf("메뉴                        수량      금액") < 0) {
+                this.parserMenu(order, builder, menuList, orderMenu);
+            }
+            if (order.indexOf("합계") >= 0) {
+                menuList = null;
             }
 
             // 원산지 파싱
@@ -816,9 +682,6 @@ public class ParserService {
         // 주문 요청 사항
         builder.orderRemark(this.decode(encodingList.get(orderRemarkIndex + 1)).trim());
 
-        // 원본 메뉴
-        builder.orderMenu(orderMenu);
-
         builder.orderCarryType("A"); // 자체 배달
         return builder.build();
     }
@@ -828,8 +691,7 @@ public class ParserService {
         int orderNumberIndex = -1;
         int addressIndex = -1;
         ArrayList<MenuDTO> menuList = null;
-        MenuDTO menuDTO = null;
-        String orderMenu = "";
+        StringBuilder orderMenu = new StringBuilder();
 
         int index = 0;
         for (String encoded : encodingList) {
@@ -873,31 +735,11 @@ public class ParserService {
             if (order.indexOf("메뉴명                     수량       금액") >= 0) {
                 menuList = new ArrayList<>();
             }
-            if (menuList != null) {
-                if (order.indexOf("메뉴명                     수량       금액") >= 0 ||
-                        order.indexOf("------------------------------------------") >= 0 ||
-                        order.indexOf("배달팁") >= 0) { // do nothing
-
-                } else if (order.startsWith(" +")) { // 메뉴 옵션 파싱
-                    orderMenu += order; // 원본 메뉴
-                    OptionDTO optionDTO = new OptionDTO();
-                    optionDTO.setNum(String.valueOf(menuDTO.getOptionList().size() + 1));
-                    // 옵션 수량, 금액 파싱
-                    this.parseOption(order, optionDTO);
-
-                    // 메뉴에 옵션 추가
-                    menuDTO.getOptionList().add(optionDTO);
-                } else if (order.indexOf("합계") >= 0) { // 메뉴 파싱 종료
-                    builder.orderMenuList(menuList);
-                    menuDTO = null;
-                    menuList = null;
-                } else { // 메뉴 파싱: 메뉴이면 menuDTO 교체, 개행이면 기존 menuDTO 사용
-                    orderMenu += order; // 원본 메뉴
-                    MenuDTO newMenuDTO = this.parseMenu(order, menuDTO, menuList);
-                    if (newMenuDTO != null) {
-                        menuDTO = newMenuDTO;
-                    }
-                }
+            if (menuList != null && order.indexOf("메뉴명                     수량       금액") < 0) {
+                this.parserMenu(order, builder, menuList, orderMenu);
+            }
+            if (order.indexOf("합계") >= 0) {
+                menuList = null;
             }
 
             ++index;
@@ -912,9 +754,6 @@ public class ParserService {
         // 주소 파싱
         builder.originalJibunAddress(this.decode(encodingList.get(addressIndex + 1)).trim());
 
-        // 원본 메뉴
-        builder.orderMenu(orderMenu);
-
         builder.orderCarryType("A"); // 자체 배달
         return builder.build();
     }
@@ -924,8 +763,7 @@ public class ParserService {
         int orderNumberIndex = -1;
         int phoneIndex = -1;
         ArrayList<MenuDTO> menuList = null;
-        MenuDTO menuDTO = null;
-        String orderMenu = "";
+        StringBuilder orderMenu = new StringBuilder();
 
         int index = 0;
         for (String encoded : encodingList) {
@@ -966,31 +804,11 @@ public class ParserService {
             if (order.indexOf("메뉴명                     수량       금액") >= 0) {
                 menuList = new ArrayList<>();
             }
-            if (menuList != null) {
-                if (order.indexOf("메뉴명                     수량       금액") >= 0 ||
-                        order.indexOf("------------------------------------------") >= 0 ||
-                        order.indexOf("배달팁") >= 0) { // do nothing
-
-                } else if (order.startsWith(" +")) { // 메뉴 옵션 파싱
-                    orderMenu += order; // 원본 메뉴
-                    OptionDTO optionDTO = new OptionDTO();
-                    optionDTO.setNum(String.valueOf(menuDTO.getOptionList().size() + 1));
-                    // 옵션 수량, 금액 파싱
-                    this.parseOption(order, optionDTO);
-
-                    // 메뉴에 옵션 추가
-                    menuDTO.getOptionList().add(optionDTO);
-                } else if (order.indexOf("합계") >= 0) { // 메뉴 파싱 종료
-                    builder.orderMenuList(menuList);
-                    menuDTO = null;
-                    menuList = null;
-                } else { // 메뉴 파싱: 메뉴이면 menuDTO 교체, 개행이면 기존 menuDTO 사용
-                    orderMenu += order; // 원본 메뉴
-                    MenuDTO newMenuDTO = this.parseMenu(order, menuDTO, menuList);
-                    if (newMenuDTO != null) {
-                        menuDTO = newMenuDTO;
-                    }
-                }
+            if (menuList != null && order.indexOf("메뉴명                     수량       금액") < 0) {
+                this.parserMenu(order, builder, menuList, orderMenu);
+            }
+            if (order.indexOf("합계") >= 0) {
+                menuList = null;
             }
 
             ++index;
@@ -1005,15 +823,41 @@ public class ParserService {
         // 연락처 파싱
         builder.orderPhone(this.convertOrderPhone(this.decode(encodingList.get(phoneIndex + 1)).trim()));
 
-        // 원본 메뉴
-        builder.orderMenu(orderMenu);
-
         builder.orderCarryType("P"); // 픽업(포장)
         return builder.build();
     }
 
+    private void parserMenu(String order, ServerRequestDTO.ServerRequestDTOBuilder builder, ArrayList<MenuDTO> menuList, StringBuilder orderMenu) {
+        if (order.indexOf("------------------------------------------") >= 0 ||
+                order.indexOf("배달팁") >= 0) { // do nothing
+
+        } else if (order.startsWith(" +")) { // 메뉴 옵션 파싱
+            orderMenu.append(order); // 원본 메뉴
+
+            MenuDTO menuDTO = menuList.get(menuList.size() - 1);
+            OptionDTO optionDTO = new OptionDTO();
+            optionDTO.setNum(String.valueOf(menuDTO.getOptionList().size() + 1));
+            // 옵션 수량, 금액 파싱
+            this.parseOption(order, optionDTO);
+
+            // 메뉴에 옵션 추가
+            menuDTO.getOptionList().add(optionDTO);
+        } else if (order.indexOf("합계") >= 0) { // 메뉴 파싱 종료
+            builder.orderMenuList(menuList);
+            builder.orderMenu(orderMenu.toString());
+        } else { // 메뉴 파싱: 메뉴이면 menuDTO 교체, 개행이면 기존 menuDTO 사용
+            orderMenu.append(order); // 원본 메뉴
+            this.parseMenu(order, menuList);
+        }
+    }
+
     // 메뉴 파싱이 되면 새로 생성된 MenuDTO가 리턴
-    private MenuDTO parseMenu(String order, MenuDTO menuDTO, ArrayList<MenuDTO> menuList) {
+    private MenuDTO parseMenu(String order, ArrayList<MenuDTO> menuList) {
+        MenuDTO menuDTO = null;
+        if (menuList.size() > 0) {
+            menuDTO = menuList.get(menuList.size() - 1);
+        }
+
         List<String> menuParsingList = new ArrayList<>();
         for (String item : order.split("  ")) {
             if (StringUtils.hasText(item.trim())) {
@@ -1021,15 +865,37 @@ public class ParserService {
             }
         }
 
-        if (menuParsingList.size() == 1) { // 메뉴명이 개행되는 경우, 기존 MenuDTO 메뉴명에 추가
-            if (menuDTO != null) {
+        if (menuParsingList.size() == 1) { // 메뉴제목, 메뉴제목 개행이 구분이 안된다. 그 다음에거롤 보고 판단한다.
+            // 메뉴 제목 개행이라고 가정하고 기존 menuDTO에 추가한다. 그리고 tempTitle에도 추가한다.
+            if (menuDTO == null) {
+                // 첫번째 줄인 경우
+                MenuDTO newMenuDTO = new MenuDTO();
+                newMenuDTO.setNum(String.valueOf(menuList.size() + 1));
+                newMenuDTO.setOptionList(new ArrayList<>());
+                newMenuDTO.setMenu(menuParsingList.get(0));
+                menuList.add(newMenuDTO); // 메뉴 리스트에 메뉴 추가
+            } else {
+                // 두번째 줄 이상인 경우: 기존 menuDTO에 넣는다.
                 menuDTO.setMenu(menuDTO.getMenu() + menuParsingList.get(0));
+                menuDTO.setTempTitle(menuParsingList.get(0));
             }
         }
         if (menuParsingList.size() == 2) { // 수량, 가격이 개행되는 경우
-            if (menuDTO != null) {
+            if (menuDTO.getPrice() == null) {
+                // 두번째 줄인 경우
                 menuDTO.setQuantity(menuParsingList.get(0));
-                menuDTO.setPrice(menuParsingList.get(1));
+                menuDTO.setPrice(this.convertPrice(menuParsingList.get(1)));
+            } else {
+                // MenuDTO의 menu에 추가된 것을 지운다.
+                menuDTO.setMenu(menuDTO.getMenu().replace(menuDTO.getTempTitle(), ""));
+                // 신규 MenuDTO를 만들어서 추가한다.
+                MenuDTO newMenuDTO = new MenuDTO();
+                newMenuDTO.setNum(String.valueOf(menuList.size() + 1));
+                newMenuDTO.setOptionList(new ArrayList<>());
+                newMenuDTO.setMenu(menuDTO.getTempTitle());
+                newMenuDTO.setQuantity(menuParsingList.get(0));
+                newMenuDTO.setPrice(this.convertPrice(menuParsingList.get(1)));
+                menuList.add(newMenuDTO); // 메뉴 리스트에 메뉴 추가
             }
         }
 

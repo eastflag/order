@@ -1,5 +1,6 @@
 package com.spider.order.dto;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -27,4 +28,7 @@ public class MenuDTO {
 
     @JsonProperty("OptionList")
     private ArrayList<OptionDTO> optionList;
+
+    @JsonIgnore
+    private String tempTitle = "";
 }
