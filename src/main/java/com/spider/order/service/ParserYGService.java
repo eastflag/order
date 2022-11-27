@@ -15,8 +15,257 @@ import java.util.List;
 @Slf4j
 public class ParserYGService {
 
-    // 신배민 - 배달
     public ServerRequestDTO parseYG_del(List<String> encodingList) {
+        ServerRequestDTO.ServerRequestDTOBuilder builder = ServerRequestDTO.builder();
+        String orderRemark = null;
+        String originalJibunAddress = null;
+        String originalRoadAddress = null;
+        String ingredientOrigins = null;
+        ArrayList<MenuDTO> menuList = null;
+        StringBuilder orderMenu = new StringBuilder();
+
+        int index = 0;
+        for (String encoded : encodingList) {
+            String order = CommonUtil.decodeYG(encoded);
+
+            log.info("decoded: {}", order);
+            log.info("encoded: {}", encoded);
+
+            // 주문 번호
+            if (order.indexOf("주문 번호:") >= 0 && order.indexOf("주문 번호: #") < 0) {
+                builder.orderNumber(order.replace("주문번호:", "").trim());
+            }
+
+            // 주문 일자
+            if (order.indexOf("주문 일자:") >= 0) {
+                builder.orderDate(this.convertOrderDate(order.replace("주문 일자:", "").trim()));
+            }
+
+            // 주문 매장
+            if (order.indexOf("주문 매장:") >= 0) {
+                builder.orderStore(order.replace("주문 매장:", "").trim());
+            }
+
+            // 연락처
+            if (order.indexOf("연락처:") >= 0) {
+                builder.orderPhone(order.replace("연락처:", "").trim());
+            }
+
+            // 결제방식 파싱
+            if (order.indexOf("결제 방법:") >= 0) {
+                builder.orderPayKind(this.convertOrderPayKind(order));
+            }
+
+            // 배달팁 파싱
+            if (order.indexOf("배달료:") >= 0) {
+                builder.orderFee(this.convertPrice(order.replace("배달료:", "").trim()));
+            }
+
+            // 합계 파싱
+            if (order.indexOf("합계:") >= 0) {
+                builder.orderSum(this.convertPrice(order.replace("합계:", "").trim()));
+            }
+
+            // 배달 요청 사항
+            if (order.indexOf("요청 사항:") >= 0) {
+                orderRemark = "";
+            }
+            if (orderRemark != null) {
+                if (order.indexOf("-----") >= 0) {
+                    builder.orderRemark(orderRemark);
+                    orderRemark = null;
+                } else {
+                    orderRemark += order.replace("요청 사항:", "").trim();
+                }
+            }
+
+            // 도로명 주소
+            if (order.indexOf("(도로명) ") >= 0) {
+                originalRoadAddress = "";
+            }
+            if (originalRoadAddress != null) {
+                if (order.indexOf("(지번)") >= 0) {
+                    // 도로명 주소 끝
+                    builder.originalRoadAddress(originalRoadAddress);
+                    originalRoadAddress = null;
+                } else {
+                    // 지번 주소 개행분 추가
+                    originalRoadAddress += order.replace("(도로명) ", "");
+                }
+            }
+
+            // 지번 주소
+            if (order.indexOf("(지번) ") >= 0) {
+                originalJibunAddress = "";
+            }
+            if (originalJibunAddress != null) {
+                if (order.indexOf("-----") >= 0) {
+                    // 지번 주소 끝
+                    builder.originalJibunAddress(originalJibunAddress);
+                    originalJibunAddress = null;
+                } else {
+                    // 지번 주소 개행분 추가
+                    originalJibunAddress += order.replace("(지번) ", "");
+                }
+            }
+
+            // 원산지 파싱
+            if (order.indexOf("원산지: ") >= 0) {
+                ingredientOrigins = "";
+            }
+            if (ingredientOrigins != null) {
+                if (encoded.indexOf("1D5601") >= 0) { // 종료
+                    builder.ingredientOrigins(ingredientOrigins.trim());
+                    ingredientOrigins = null;
+                } else {
+                    ingredientOrigins += order;
+                }
+            }
+
+            // 메뉴 리스트 파싱
+            if (order.indexOf("메뉴명                      수량      가격") >= 0) {
+                menuList = new ArrayList<>();
+            }
+            if (menuList != null) {
+                this.parserMenu(order, builder, menuList, orderMenu);
+            }
+            if (order.indexOf("합계") >= 0) {
+                menuList = null;
+            }
+
+            ++index;
+        }
+
+        builder.orderCarryType("D"); // 배달
+        return builder.build();
+    }
+
+    public ServerRequestDTO parseYG_wrap(List<String> encodingList) {
+        ServerRequestDTO.ServerRequestDTOBuilder builder = ServerRequestDTO.builder();
+        String orderRemark = null;
+        String originalJibunAddress = null;
+        String originalRoadAddress = null;
+        String ingredientOrigins = null;
+        ArrayList<MenuDTO> menuList = null;
+        StringBuilder orderMenu = new StringBuilder();
+
+        int index = 0;
+        for (String encoded : encodingList) {
+            String order = CommonUtil.decodeYG(encoded);
+
+            log.info("decoded: {}", order);
+            log.info("encoded: {}", encoded);
+
+            // 주문 번호
+            if (order.indexOf("주문 번호:") >= 0 && order.indexOf("주문 번호: #") < 0) {
+                builder.orderNumber(order.replace("주문번호:", "").trim());
+            }
+
+            // 주문 일자
+            if (order.indexOf("주문 일자:") >= 0) {
+                builder.orderDate(this.convertOrderDate(order.replace("주문 일자:", "").trim()));
+            }
+
+            // 주문 매장
+            if (order.indexOf("주문 매장:") >= 0) {
+                builder.orderStore(order.replace("주문 매장:", "").trim());
+            }
+
+            // 연락처
+            if (order.indexOf("연락처:") >= 0) {
+                builder.orderPhone(order.replace("연락처:", "").trim());
+            }
+
+            // 결제방식 파싱
+            if (order.indexOf("결제 방법:") >= 0) {
+                builder.orderPayKind(this.convertOrderPayKind(order));
+            }
+
+            // 배달팁 파싱
+            if (order.indexOf("배달료:") >= 0) {
+                builder.orderFee(this.convertPrice(order.replace("배달료:", "").trim()));
+            }
+
+            // 합계 파싱
+            if (order.indexOf("합계:") >= 0) {
+                builder.orderSum(this.convertPrice(order.replace("합계:", "").trim()));
+            }
+
+            // 배달 요청 사항
+            if (order.indexOf("요청 사항:") >= 0) {
+                orderRemark = "";
+            }
+            if (orderRemark != null) {
+                if (order.indexOf("-----") >= 0) {
+                    builder.orderRemark(orderRemark);
+                    orderRemark = null;
+                } else {
+                    orderRemark += order.replace("요청 사항:", "").trim();
+                }
+            }
+
+            // 도로명 주소
+            if (order.indexOf("(도로명) ") >= 0) {
+                originalRoadAddress = "";
+            }
+            if (originalRoadAddress != null) {
+                if (order.indexOf("(지번)") >= 0) {
+                    // 도로명 주소 끝
+                    builder.originalRoadAddress(originalRoadAddress);
+                    originalRoadAddress = null;
+                } else {
+                    // 지번 주소 개행분 추가
+                    originalRoadAddress += order.replace("(도로명) ", "");
+                }
+            }
+
+            // 지번 주소
+            if (order.indexOf("(지번) ") >= 0) {
+                originalJibunAddress = "";
+            }
+            if (originalJibunAddress != null) {
+                if (order.indexOf("-----") >= 0) {
+                    // 지번 주소 끝
+                    builder.originalJibunAddress(originalJibunAddress);
+                    originalJibunAddress = null;
+                } else {
+                    // 지번 주소 개행분 추가
+                    originalJibunAddress += order.replace("(지번) ", "");
+                }
+            }
+
+            // 원산지 파싱
+            if (order.indexOf("원산지: ") >= 0) {
+                ingredientOrigins = "";
+            }
+            if (ingredientOrigins != null) {
+                if (encoded.indexOf("1D5601") >= 0) { // 종료
+                    builder.ingredientOrigins(ingredientOrigins.trim());
+                    ingredientOrigins = null;
+                } else {
+                    ingredientOrigins += order;
+                }
+            }
+
+            // 메뉴 리스트 파싱
+            if (order.indexOf("메뉴명                      수량      가격") >= 0) {
+                menuList = new ArrayList<>();
+            }
+            if (menuList != null) {
+                this.parserMenu(order, builder, menuList, orderMenu);
+            }
+            if (order.indexOf("합계") >= 0) {
+                menuList = null;
+            }
+
+            ++index;
+        }
+
+        builder.orderCarryType("P"); // 포장
+        return builder.build();
+    }
+
+    public ServerRequestDTO parseYG_express(List<String> encodingList) {
         ServerRequestDTO.ServerRequestDTOBuilder builder = ServerRequestDTO.builder();
         String orderRemark = null;
         String originalJibunAddress = null;

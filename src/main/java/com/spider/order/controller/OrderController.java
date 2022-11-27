@@ -127,6 +127,12 @@ public class OrderController {
             case "YG_del":
                 serverRequestDTO = parserYGService.parseYG_del(encodingList);
                 break;
+            case "YG_wrap":
+                serverRequestDTO = parserYGService.parseYG_wrap(encodingList);
+                break;
+            case "YG_express":
+                serverRequestDTO = parserYGService.parseYG_express(encodingList);
+                break;
         }
 
         if (serverRequestDTO != null) {
