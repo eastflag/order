@@ -3,6 +3,7 @@ package com.spider.order.controller;
 import com.spider.order.dto.AgentRequestDTO;
 import com.spider.order.dto.ServerRequestDTO;
 import com.spider.order.service.ParserBMService;
+import com.spider.order.service.ParserSHService;
 import com.spider.order.service.ParserYGService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -11,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -21,6 +23,7 @@ import java.util.List;
 public class OrderController {
     private final ParserBMService parserBMService;
     private final ParserYGService parserYGService;
+    private final ParserSHService parserSHService;
 
     @PostMapping("/order")
     public ServerRequestDTO order(@RequestBody AgentRequestDTO agentRequestDTO) {
@@ -48,12 +51,14 @@ public class OrderController {
 
         if (hexadecimal.indexOf("BFE400B1E200BFE4") >= 0) { // "요 기 요"
             if (hexadecimal.indexOf("BFE400B1E200BFE420C0CD00BDBA00C7C100B7B900BDBA") >= 0) { // "요 기 요 익 스 프 레 스"
-                orderAppKind = "YG_express";
+                orderAppKind = "YE";
             } else if (hexadecimal.indexOf("BFE400B1E200BFE420C6F700C0E5") >= 0) { // "요 기 요 포 장"
                 orderAppKind = "YG_wrap";
             } else {
                 orderAppKind = "YG_del";
             }
+        } else if (hexadecimal.indexOf("B6AFB0DCBFE4") >= 0) { // "땡겨요"
+            orderAppKind = "SH";
         } else if (hexadecimal.indexOf("C1D6B9AEB9F8C8A33A5430") >= 0) { // C1D6B9AEB9F8C8A33A5430, 배민라이더스
             if (hexadecimal.indexOf("B9E8B4DE20C1D6B9AEC0FCC7A5") >= 0) { // 배달 주문전표, 배달
                 orderAppKind = "BR_del";
@@ -87,11 +92,33 @@ public class OrderController {
             case "YG":
                 splitChar = "0D0A";
                 break;
+            case "SH":
+                splitChar = "0A";
+                break;
             default:
                 splitChar = "0A0D";
 
         }
-        List<String> encodedList = Arrays.asList(hexadecimal.split(splitChar));
+        List<String> encodedList;
+
+        if (orderAppKind.equals("SH")) {
+            // SH의 경우 10A1 처럼 홀수인덱스가 선택될수 있다.
+            encodedList = new ArrayList<>();
+            StringBuilder stingBuilder = new StringBuilder();
+            for (int i = 0; i < hexadecimal.length(); i += 2) {
+                // using left shift operator on every character
+                String str = hexadecimal.substring(i, i + 2);
+                if (str.equals("0A")) {
+                    encodedList.add(stingBuilder.toString());
+                    stingBuilder = new StringBuilder();
+                } else {
+                    stingBuilder.append(str);
+                }
+            }
+            encodedList.add(stingBuilder.toString());
+        } else {
+            encodedList = Arrays.asList(hexadecimal.split(splitChar));
+        }
 
         return encodedList;
     }
@@ -130,8 +157,11 @@ public class OrderController {
             case "YG_wrap":
                 serverRequestDTO = parserYGService.parseYG_wrap(encodingList);
                 break;
-            case "YG_express":
-                serverRequestDTO = parserYGService.parseYG_express(encodingList);
+            case "YE":
+                serverRequestDTO = parserYGService.parseYE(encodingList);
+                break;
+            case "SH":
+                serverRequestDTO = parserSHService.parseSH(encodingList);
                 break;
         }
 

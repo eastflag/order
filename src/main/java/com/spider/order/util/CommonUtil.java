@@ -87,4 +87,48 @@ public class CommonUtil {
 
         return result;
     }
+
+    public static String decodeSH(String hexadecimal) {
+        String result = null;
+
+        // 특수문자 제거
+        // 1B: <-
+        // 40: @
+        // 21: !
+        // 18: 위로 화살표
+        // 45: E
+        // 20: 스페이스
+        // 0A0D: 엔터
+
+        hexadecimal = hexadecimal.replace("1B6130", "");
+        hexadecimal = hexadecimal.replace("1B6131", "");
+        hexadecimal = hexadecimal.replace("1B40", "");
+        hexadecimal = hexadecimal.replace("1B21", "");
+
+        hexadecimal = hexadecimal.replace("1D2101", "");
+        hexadecimal = hexadecimal.replace("1D21", "");
+        hexadecimal = hexadecimal.replace("011B", "");
+        hexadecimal = hexadecimal.replace("6131", "");
+
+        hexadecimal = hexadecimal.replace("00", "");
+        hexadecimal = hexadecimal.replace("08", "");
+
+
+        int len = hexadecimal.length();
+        byte[] ans = new byte[len / 2];
+
+        for (int i = 0; i < len; i += 2) {
+            // using left shift operator on every character
+            ans[i / 2] = (byte) ((Character.digit(hexadecimal.charAt(i), 16) << 4)
+                    + Character.digit(hexadecimal.charAt(i + 1), 16));
+        }
+
+        try {
+            result = new String(ans, "euc-kr");
+        } catch (UnsupportedEncodingException e) {
+
+        }
+
+        return result;
+    }
 }
