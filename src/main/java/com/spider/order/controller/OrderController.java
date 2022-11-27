@@ -29,7 +29,7 @@ public class OrderController {
         String orderAppKind = this.checkOrderAppKind(hexadecimal);
         log.info("orderAppKind: {}", orderAppKind);
 
-        List<String> resultList = this.getSplit(hexadecimal);
+        List<String> resultList = this.getSplit(hexadecimal, orderAppKind.substring(0, 2));
 
         ServerRequestDTO serverRequestDTO = this.parse(resultList, orderAppKind);
         if (serverRequestDTO != null) {
@@ -46,9 +46,14 @@ public class OrderController {
     private String checkOrderAppKind(String hexadecimal) {
         String orderAppKind = null;
 
-        if (hexadecimal.indexOf("C1D6B9AEB9F8C8A33A5430") >= 0) {
-
-
+        if (hexadecimal.indexOf("BFE400B1E200BFE4") >= 0) { // "요 기 요"
+            if (hexadecimal.indexOf("BFE400B1E200BFE420C0CD00BDBA00C7C100B7B900BDBA") >= 0) { // "요 기 요 익 스 프 레 스"
+                orderAppKind = "YG_express";
+            } else if (hexadecimal.indexOf("BFE400B1E200BFE420C6F700C0E5") >= 0) { // "요 기 요 포 장"
+                orderAppKind = "YG_wrap";
+            } else {
+                orderAppKind = "YG_del";
+            }
         } else if (hexadecimal.indexOf("C1D6B9AEB9F8C8A33A5430") >= 0) { // C1D6B9AEB9F8C8A33A5430, 배민라이더스
             if (hexadecimal.indexOf("B9E8B4DE20C1D6B9AEC0FCC7A5") >= 0) { // 배달 주문전표, 배달
                 orderAppKind = "BR_del";
@@ -76,8 +81,17 @@ public class OrderController {
         return orderAppKind;
     }
 
-    private List<String> getSplit(String hexadecimal) {
-        List<String> encodedList = Arrays.asList(hexadecimal.split("0A0D"));
+    private List<String> getSplit(String hexadecimal, String orderAppKind) {
+        String splitChar = "";
+        switch (orderAppKind) {
+            case "YG":
+                splitChar = "0D0A";
+                break;
+            default:
+                splitChar = "0A0D";
+
+        }
+        List<String> encodedList = Arrays.asList(hexadecimal.split(splitChar));
 
         return encodedList;
     }
@@ -109,6 +123,9 @@ public class OrderController {
                 break;
             case "BM_old_wrap":
                 serverRequestDTO = parserBMService.parseBM_old_wrap(encodingList);
+                break;
+            case "YG_del":
+                serverRequestDTO = parserYGService.parseYG_del(encodingList);
                 break;
         }
 

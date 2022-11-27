@@ -89,8 +89,19 @@ class OrderApplicationTests {
     }
 
     @Test
-    void test4() {
-//        System.out.println("" + Integer.parseInt("1,000"));
+    void test4() throws NumberFormatException {
+        // 요기요: 2022년 08월 24일(수) 오후04:38
+        String orderDate = "2022년 08월 24일(수) 오후04:38";
+        String yyyyMMdd = orderDate.substring(0, 12).replace("년 ", "").replace("월 ", "");
+        String amPm = orderDate.substring(17, 19);
+        String hh = orderDate.substring(19, 21);
+        String mm = orderDate.substring(22);
 
+        if (amPm.indexOf("오후") >= 0) {
+            int intHH = Integer.parseInt(hh) + 12;
+            hh = String.valueOf(intHH);
+        }
+
+        System.out.println(yyyyMMdd + hh + mm);
     }
 }

@@ -45,4 +45,46 @@ public class CommonUtil {
 
         return result;
     }
+
+    public static String decodeYG(String hexadecimal) {
+        String result = null;
+
+        // 특수문자 제거
+        // 1B: <-
+        // 40: @
+        // 21: !
+        // 18: 위로 화살표
+        // 45: E
+        // 20: 스페이스
+        // 0A0D: 엔터
+
+        hexadecimal = hexadecimal.replace("1B4501", "");
+        hexadecimal = hexadecimal.replace("1B45", "");
+        hexadecimal = hexadecimal.replace("1B32", "");
+        hexadecimal = hexadecimal.replace("1B61", "");
+        hexadecimal = hexadecimal.replace("1B21", "");
+        hexadecimal = hexadecimal.replace("1B4D", "");
+        hexadecimal = hexadecimal.replace("1D42", "");
+        hexadecimal = hexadecimal.replace("1D2101", "");
+        hexadecimal = hexadecimal.replace("1D21", "");
+        hexadecimal = hexadecimal.replace("00", "");
+
+
+        int len = hexadecimal.length();
+        byte[] ans = new byte[len / 2];
+
+        for (int i = 0; i < len; i += 2) {
+            // using left shift operator on every character
+            ans[i / 2] = (byte) ((Character.digit(hexadecimal.charAt(i), 16) << 4)
+                    + Character.digit(hexadecimal.charAt(i + 1), 16));
+        }
+
+        try {
+            result = new String(ans, "euc-kr");
+        } catch (UnsupportedEncodingException e) {
+
+        }
+
+        return result;
+    }
 }
