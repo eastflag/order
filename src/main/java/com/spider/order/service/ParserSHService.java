@@ -122,13 +122,13 @@ public class ParserSHService {
             }
 
             // 메뉴 리스트 파싱
-            if (order.indexOf("메뉴명                      수량      가격") >= 0) {
+            if (order.indexOf("메뉴명                    수량        금액") >= 0) {
                 menuList = new ArrayList<>();
             }
             if (menuList != null) {
                 this.parserMenu(order, builder, menuList, orderMenu);
             }
-            if (order.indexOf("합계") >= 0) {
+            if (order.indexOf("총 결제금액") >= 0) {
                 menuList = null;
             }
 
@@ -140,17 +140,17 @@ public class ParserSHService {
     }
 
     private void parserMenu(String order, ServerRequestDTO.ServerRequestDTOBuilder builder, ArrayList<MenuDTO> menuList, StringBuilder orderMenu) {
-        if (order.indexOf("메뉴명                      수량      가격") >= 0
+        if (order.indexOf("메뉴명                    수량        금액") >= 0
                 || order.indexOf("-----") >= 0
-                || order.indexOf("최소주문금액") >= 0
-                || order.indexOf("배달료") >= 0) {
+                || order.indexOf("주문금액") >= 0
+                || order.indexOf("배달비") >= 0) {
             // do nothing
-        } else if (order.startsWith("- ")) {
+        } else if (order.startsWith(" +")) {
             // 메뉴 옵션 파싱, 메뉴 수량 개행은 제외
             orderMenu.append(order); // 원본 메뉴
 
             MenuDTO menuDTO = menuList.get(menuList.size() - 1);
-            if (order.startsWith("- ")) {
+            if (order.startsWith(" +")) {
                 OptionDTO optionDTO = new OptionDTO();
                 optionDTO.setNum(String.valueOf(menuDTO.getOptionList().size() + 1));
                 optionDTO.setMenu(order.replace("- ", ""));
@@ -162,7 +162,7 @@ public class ParserSHService {
                 optionDTO.setMenu(optionDTO.getMenu() + order.trim());
                 this.parseOptionPrice(optionDTO.getMenu(), optionDTO);
             }
-        } else if (order.indexOf("합계") >= 0) { // 메뉴 파싱 종료
+        } else if (order.indexOf("총 결제금액") >= 0) { // 메뉴 파싱 종료
             builder.orderMenuList(menuList);
             builder.orderMenu(orderMenu.toString());
         } else { // 메뉴 파싱
