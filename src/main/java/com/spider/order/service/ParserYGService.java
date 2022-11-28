@@ -15,6 +15,8 @@ import java.util.List;
 @Slf4j
 public class ParserYGService {
 
+    private int menuState = 0; // 1: 메뉴 2: 옵션
+
     public ServerRequestDTO parseYG_del(List<String> encodingList) {
         ServerRequestDTO.ServerRequestDTOBuilder builder = ServerRequestDTO.builder();
         String orderRemark = null;
@@ -409,34 +411,52 @@ public class ParserYGService {
             orderMenu.append(order); // 원본 메뉴
 
             MenuDTO menuDTO = menuList.get(menuList.size() - 1);
-            if (order.startsWith("- ")) {
-                OptionDTO optionDTO = new OptionDTO();
-                optionDTO.setNum(String.valueOf(menuDTO.getOptionList().size() + 1));
-                optionDTO.setMenu(order.replace("- ", ""));
-                this.parseOptionPrice(order, optionDTO);
-                menuDTO.getOptionList().add(optionDTO);         // 메뉴에 옵션 추가
-            } else { // 옵션 개행
-                // 마지막 option 가져오기
-                OptionDTO optionDTO = menuDTO.getOptionList().get(menuDTO.getOptionList().size() - 1);
-                optionDTO.setMenu(optionDTO.getMenu() + order.trim());
-                this.parseOptionPrice(optionDTO.getMenu(), optionDTO);
-            }
+            this.parseOption(order, menuDTO);
+
+            this.menuState = 2;
         } else if (order.indexOf("합계") >= 0) { // 메뉴 파싱 종료
             builder.orderMenuList(menuList);
             builder.orderMenu(orderMenu.toString());
-        } else { // 메뉴 파싱
+
+            this.menuState = 0;
+        } else { // 메뉴, 메뉴 개행 or 옵션 개행
             orderMenu.append(order); // 원본 메뉴
-            this.parseMenu(order, menuList);
+
+            List<String> menuParsingList = new ArrayList<>();
+            for (String item : order.split("  ")) {
+                if (StringUtils.hasText(item.trim())) {
+                    menuParsingList.add(item.trim());
+                }
+            }
+
+            if (menuParsingList.size() == 1) { // 메뉴개행, 옵션개행 구분이 안된다. 이전꺼를 보고 판단.
+                MenuDTO menuDTO = menuList.get(menuList.size() - 1);
+
+                if (this.menuState == 1) { // 메뉴 개행
+                    menuDTO.setMenu(menuDTO.getMenu() + order.trim());
+
+                } else if (this.menuState == 2) { // 옵션 개행
+                    List<OptionDTO> optionList = menuDTO.getOptionList();
+                    OptionDTO optionDTO = optionList.get(optionList.size() - 1);
+                    optionDTO.setMenu(optionDTO.getMenu() + order.trim());
+                }
+            } else if (menuParsingList.size() == 3) { // 메뉴
+                MenuDTO newMenuDTO = new MenuDTO();
+                newMenuDTO.setNum(String.valueOf(menuList.size() + 1));
+                newMenuDTO.setOptionList(new ArrayList<>());
+                newMenuDTO.setMenu(menuParsingList.get(0));
+                newMenuDTO.setQuantity(menuParsingList.get(1));
+                newMenuDTO.setPrice(this.convertPrice(menuParsingList.get(2)));
+                // 메뉴 리스트에 메뉴 추가
+                menuList.add(newMenuDTO);
+
+                this.menuState = 1;
+            }
         }
     }
 
     // 메뉴 파싱이 되면 새로 생성된 MenuDTO가 리턴
-    private MenuDTO parseMenu(String order, ArrayList<MenuDTO> menuList) {
-        MenuDTO menuDTO = null;
-        if (menuList.size() > 0) {
-            menuDTO = menuList.get(menuList.size() - 1);
-        }
-
+    private void parseOption(String order, MenuDTO menuDTO) {
         List<String> menuParsingList = new ArrayList<>();
         for (String item : order.split("  ")) {
             if (StringUtils.hasText(item.trim())) {
@@ -444,52 +464,27 @@ public class ParserYGService {
             }
         }
 
-        if (menuParsingList.size() == 1) { // 메뉴제목, 메뉴제목 개행이 구분이 안된다. 그 다음에거롤 보고 판단한다.
-            // 메뉴 제목 개행이라고 가정하고 기존 menuDTO에 추가한다. 그리고 tempTitle에도 추가한다.
-            if (menuDTO == null) {
-                // 첫번째 줄인 경우
-                MenuDTO newMenuDTO = new MenuDTO();
-                newMenuDTO.setNum(String.valueOf(menuList.size() + 1));
-                newMenuDTO.setOptionList(new ArrayList<>());
-                newMenuDTO.setMenu(menuParsingList.get(0));
-                menuList.add(newMenuDTO); // 메뉴 리스트에 메뉴 추가
-            } else {
-                // 두번째 줄 이상인 경우: 기존 menuDTO에 넣는다.
-                menuDTO.setMenu(menuDTO.getMenu() + menuParsingList.get(0));
-                menuDTO.setTempTitle(menuParsingList.get(0));
-            }
+        if (menuParsingList.size() == 1) {  // 옵션명
+            OptionDTO optionDTO = new OptionDTO();
+            optionDTO.setNum(String.valueOf(menuDTO.getOptionList().size() + 1));
+            optionDTO.setMenu(menuParsingList.get(0).replace("- ", ""));
+            menuDTO.getOptionList().add(optionDTO);
         }
-        if (menuParsingList.size() == 2) { // 수량, 가격이 개행되는 경우
-            if (menuDTO.getPrice() == null) {
-                // 두번째 줄인 경우
-                menuDTO.setQuantity(menuParsingList.get(0));
-                menuDTO.setPrice(this.convertPrice(menuParsingList.get(1)));
-            } else {
-                // MenuDTO의 menu에 추가된 것을 지운다.
-                menuDTO.setMenu(menuDTO.getMenu().replace(menuDTO.getTempTitle(), ""));
-                // 신규 MenuDTO를 만들어서 추가한다.
-                MenuDTO newMenuDTO = new MenuDTO();
-                newMenuDTO.setNum(String.valueOf(menuList.size() + 1));
-                newMenuDTO.setOptionList(new ArrayList<>());
-                newMenuDTO.setMenu(menuDTO.getTempTitle());
-                newMenuDTO.setQuantity(menuParsingList.get(0));
-                newMenuDTO.setPrice(this.convertPrice(menuParsingList.get(1)));
-                menuList.add(newMenuDTO); // 메뉴 리스트에 메뉴 추가
-            }
+        if (menuParsingList.size() == 2) { // 옵션명, 수량
+            OptionDTO optionDTO = new OptionDTO();
+            optionDTO.setNum(String.valueOf(menuDTO.getOptionList().size() + 1));
+            optionDTO.setMenu(menuParsingList.get(0).replace("- ", ""));
+            optionDTO.setQuantity(menuParsingList.get(1).trim());
+            menuDTO.getOptionList().add(optionDTO);
         }
 
-        if (menuParsingList.size() == 3) { // 메뉴 파싱, 신규 메뉴 생성하고 리턴
-            MenuDTO newMenuDTO = new MenuDTO();
-            newMenuDTO.setNum(String.valueOf(menuList.size() + 1));
-            newMenuDTO.setOptionList(new ArrayList<>());
-            newMenuDTO.setMenu(menuParsingList.get(0));
-            newMenuDTO.setQuantity(menuParsingList.get(1));
-            newMenuDTO.setPrice(this.convertPrice(menuParsingList.get(2)));
-            // 메뉴 리스트에 메뉴 추가
-            menuList.add(newMenuDTO);
-            return newMenuDTO;
-        } else {
-            return null;
+        if (menuParsingList.size() == 3) { // 옵션명, 수량, 가격
+            OptionDTO optionDTO = new OptionDTO();
+            optionDTO.setNum(String.valueOf(menuDTO.getOptionList().size() + 1));
+            optionDTO.setMenu(menuParsingList.get(0).replace("- ", ""));
+            optionDTO.setQuantity(menuParsingList.get(1).trim());
+            optionDTO.setPrice(this.convertPrice(menuParsingList.get(2)));
+            menuDTO.getOptionList().add(optionDTO);
         }
     }
 
