@@ -90,6 +90,7 @@ public class OrderController {
         String splitChar = "";
         switch (orderAppKind) {
             case "YG":
+            case "YE":
                 splitChar = "0D0A";
                 break;
             case "SH":

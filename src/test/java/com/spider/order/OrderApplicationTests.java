@@ -106,4 +106,11 @@ class OrderApplicationTests {
 
         System.out.println(yyyyMMdd + hh + mm);
     }
+
+    @Test
+    void test5() {
+        String orderAppKind = "YE";
+        System.out.println(orderAppKind.substring(0, 2));
+
+    }
 }

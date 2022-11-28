@@ -1,7 +1,10 @@
 package com.spider.order.util;
 
+import lombok.extern.slf4j.Slf4j;
+
 import java.io.UnsupportedEncodingException;
 
+@Slf4j
 public class CommonUtil {
 
     public static String decode(String hexadecimal) {
@@ -67,13 +70,23 @@ public class CommonUtil {
         hexadecimal = hexadecimal.replace("1D42", "");
         hexadecimal = hexadecimal.replace("1D2101", "");
         hexadecimal = hexadecimal.replace("1D21", "");
-        hexadecimal = hexadecimal.replace("00", "");
 
+//        hexadecimal = hexadecimal.replace("00", ""); => 짝수번째일 경우만 처리
+
+        StringBuilder stringBuilder = new StringBuilder();
+        for (int i = 0; i < hexadecimal.length(); i += 2) {
+            String str = hexadecimal.substring(i, i + 2);
+            if (!str.equals("00")) {
+                stringBuilder.append(str);
+            }
+        }
+        hexadecimal = stringBuilder.toString();
 
         int len = hexadecimal.length();
         byte[] ans = new byte[len / 2];
 
         for (int i = 0; i < len; i += 2) {
+            // "00" 일 경우 pass
             // using left shift operator on every character
             ans[i / 2] = (byte) ((Character.digit(hexadecimal.charAt(i), 16) << 4)
                     + Character.digit(hexadecimal.charAt(i + 1), 16));
@@ -111,8 +124,8 @@ public class CommonUtil {
         hexadecimal = hexadecimal.replace("011B", "");
         hexadecimal = hexadecimal.replace("6131", "");
 
-        hexadecimal = hexadecimal.replace("00", "");
-        hexadecimal = hexadecimal.replace("08", "");
+//        hexadecimal = hexadecimal.replace("00", "");
+//        hexadecimal = hexadecimal.replace("08", "");
 
 
         int len = hexadecimal.length();

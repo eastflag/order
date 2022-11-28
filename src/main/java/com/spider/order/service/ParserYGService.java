@@ -26,14 +26,13 @@ public class ParserYGService {
 
         int index = 0;
         for (String encoded : encodingList) {
-            String order = CommonUtil.decodeYG(encoded);
-
-            log.info("decoded: {}", order);
             log.info("encoded: {}", encoded);
+            String order = CommonUtil.decodeYG(encoded);
+            log.info("decoded: {}", order);
 
             // 주문 번호
             if (order.indexOf("주문 번호:") >= 0 && order.indexOf("주문 번호: #") < 0) {
-                builder.orderNumber(order.replace("주문번호:", "").trim());
+                builder.orderNumber(order.replace("주문 번호:", "").trim());
             }
 
             // 주문 일자
@@ -48,7 +47,7 @@ public class ParserYGService {
 
             // 연락처
             if (order.indexOf("연락처:") >= 0) {
-                builder.orderPhone(order.replace("연락처:", "").trim());
+                builder.orderPhone(this.convertOrderPhone(order.replace("연락처:", "").trim()));
             }
 
             // 결제방식 파싱
@@ -142,6 +141,7 @@ public class ParserYGService {
 
     public ServerRequestDTO parseYG_wrap(List<String> encodingList) {
         ServerRequestDTO.ServerRequestDTOBuilder builder = ServerRequestDTO.builder();
+        String orderDate = null;
         String orderRemark = null;
         String originalJibunAddress = null;
         String originalRoadAddress = null;
@@ -151,19 +151,27 @@ public class ParserYGService {
 
         int index = 0;
         for (String encoded : encodingList) {
-            String order = CommonUtil.decodeYG(encoded);
-
-            log.info("decoded: {}", order);
             log.info("encoded: {}", encoded);
+            String order = CommonUtil.decodeYG(encoded);
+            log.info("decoded: {}", order);
 
             // 주문 번호
             if (order.indexOf("주문 번호:") >= 0 && order.indexOf("주문 번호: #") < 0) {
-                builder.orderNumber(order.replace("주문번호:", "").trim());
+                builder.orderNumber(order.replace("주문 번호:", "").trim());
             }
 
             // 주문 일자
             if (order.indexOf("주문 일자:") >= 0) {
-                builder.orderDate(this.convertOrderDate(order.replace("주문 일자:", "").trim()));
+                orderDate = "";
+            }
+            if (orderDate != null) {
+                if (order.indexOf("방문 시간") >= 0
+                ) {
+                    builder.orderDate(this.convertOrderDate(orderDate));
+                    orderDate = null;
+                } else {
+                    orderDate += order.replace("주문 일자: ", "");
+                }
             }
 
             // 주문 매장
@@ -173,7 +181,7 @@ public class ParserYGService {
 
             // 연락처
             if (order.indexOf("연락처:") >= 0) {
-                builder.orderPhone(order.replace("연락처:", "").trim());
+                builder.orderPhone(this.convertOrderPhone(order.replace("연락처:", "").trim()));
             }
 
             // 결제방식 파싱
@@ -248,7 +256,7 @@ public class ParserYGService {
             }
 
             // 메뉴 리스트 파싱
-            if (order.indexOf("메뉴명                      수량      가격") >= 0) {
+            if (order.indexOf("메뉴명") >= 0 && order.indexOf("수량") >= 0 && order.indexOf("가격") >= 0) {
                 menuList = new ArrayList<>();
             }
             if (menuList != null) {
@@ -276,14 +284,13 @@ public class ParserYGService {
 
         int index = 0;
         for (String encoded : encodingList) {
-            String order = CommonUtil.decodeYG(encoded);
-
-            log.info("decoded: {}", order);
             log.info("encoded: {}", encoded);
+            String order = CommonUtil.decodeYG(encoded);
+            log.info("decoded: {}", order);
 
             // 주문 번호
             if (order.indexOf("주문 번호:") >= 0 && order.indexOf("주문 번호: #") < 0) {
-                builder.orderNumber(order.replace("주문번호:", "").trim());
+                builder.orderNumber(order.replace("주문 번호:", "").trim());
             }
 
             // 주문 일자
@@ -298,7 +305,7 @@ public class ParserYGService {
 
             // 연락처
             if (order.indexOf("연락처:") >= 0) {
-                builder.orderPhone(order.replace("연락처:", "").trim());
+                builder.orderPhone(this.convertOrderPhone(order.replace("연락처:", "").trim()));
             }
 
             // 결제방식 파싱
@@ -386,13 +393,13 @@ public class ParserYGService {
             ++index;
         }
 
-        builder.orderCarryType("D"); // 배달
+        builder.orderCarryType("A"); // 배달
         return builder.build();
     }
 
 
     private void parserMenu(String order, ServerRequestDTO.ServerRequestDTOBuilder builder, ArrayList<MenuDTO> menuList, StringBuilder orderMenu) {
-        if (order.indexOf("메뉴명                      수량      가격") >= 0
+        if (order.indexOf("메뉴명") >= 0
                 || order.indexOf("-----") >= 0
                 || order.indexOf("최소주문금액") >= 0
                 || order.indexOf("배달료") >= 0) {
@@ -489,7 +496,7 @@ public class ParserYGService {
     private void parseOptionPrice(String order, OptionDTO optionDTO) {
 
         // 옵션(2,000원) 에서 price 파싱
-        if (order.indexOf("(") >= 0 && order.indexOf(")") >= 0) {
+/*        if (order.indexOf("(") >= 0 && order.indexOf(")") >= 0) {
             int left = order.lastIndexOf("(");
             int right = order.lastIndexOf(")");
             String strPrice = this.convertPrice(order.substring(left + 1, right));
@@ -500,7 +507,7 @@ public class ParserYGService {
             } catch (Exception e) {
                 // do nothing
             }
-        }
+        }*/
 
         // 옵션메뉴 400원 에서 price 파싱
         if (order.endsWith("원")) {
@@ -532,7 +539,7 @@ public class ParserYGService {
 
     private String convertOrderPhone(String orderPhone) {
         // 구배민 (안심번호)050-71252-9487 => 050712529487
-        return orderPhone.replace("(안심번호)", "").replace("-", "").split("\n")[0];
+        return orderPhone.replace("(안심번호)", "").replace("-", "");
     }
 
     private String convertPrice(String price) {
