@@ -117,8 +117,11 @@ public class CommonUtil {
         hexadecimal = hexadecimal.replace("1B6131", "");
         hexadecimal = hexadecimal.replace("1B6132", "");
         hexadecimal = hexadecimal.replace("1B40", "");
+        hexadecimal = hexadecimal.replace("1B2108", "");
+        hexadecimal = hexadecimal.replace("1B2100", "");
         hexadecimal = hexadecimal.replace("1B21", "");
 
+        hexadecimal = hexadecimal.replace("1D2100", "");
         hexadecimal = hexadecimal.replace("1D2101", "");
         hexadecimal = hexadecimal.replace("1D21", "");
         hexadecimal = hexadecimal.replace("011B", "");

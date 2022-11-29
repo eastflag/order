@@ -17,10 +17,14 @@ public class ParserSHService {
 
     public ServerRequestDTO parseSH(List<String> encodingList) {
         ServerRequestDTO.ServerRequestDTOBuilder builder = ServerRequestDTO.builder();
-        String orderRemark = null;
+        int orderTableIndex = -1; // 주문 전표
+        int orderPhoneIndex = -1;
         String originalJibunAddress = null;
         String originalRoadAddress = null;
+        String orderRemark = null;
+        String shopRemark = null;
         String ingredientOrigins = null;
+        int orderAppIndex = -1;
         ArrayList<MenuDTO> menuList = null;
         StringBuilder orderMenu = new StringBuilder();
 
@@ -30,56 +34,18 @@ public class ParserSHService {
             String order = CommonUtil.decodeSH(encoded);
             log.info("decoded: {}", order);
 
-            // 주문 번호
-            if (order.indexOf("주문 번호:") >= 0 && order.indexOf("주문 번호: #") < 0) {
-                builder.orderNumber(order.replace("주문번호:", "").trim());
-            }
-
-            // 주문 일자
-            if (order.indexOf("주문 일자:") >= 0) {
-                builder.orderDate(this.convertOrderDate(order.replace("주문 일자:", "").trim()));
-            }
-
-            // 주문 매장
-            if (order.indexOf("주문 매장:") >= 0) {
-                builder.orderStore(order.replace("주문 매장:", "").trim());
+            // 주문 번호, 배달 or 포장
+            if (order.indexOf("주문 전표") >= 0) {
+                orderTableIndex = index;
             }
 
             // 연락처
-            if (order.indexOf("연락처:") >= 0) {
-                builder.orderPhone(order.replace("연락처:", "").trim());
-            }
-
-            // 결제방식 파싱
-            if (order.indexOf("결제 방법:") >= 0) {
-                builder.orderPayKind(this.convertOrderPayKind(order));
-            }
-
-            // 배달팁 파싱
-            if (order.indexOf("배달료:") >= 0) {
-                builder.orderFee(this.convertPrice(order.replace("배달료:", "").trim()));
-            }
-
-            // 합계 파싱
-            if (order.indexOf("합계:") >= 0) {
-                builder.orderSum(this.convertPrice(order.replace("합계:", "").trim()));
-            }
-
-            // 배달 요청 사항
-            if (order.indexOf("요청 사항:") >= 0) {
-                orderRemark = "";
-            }
-            if (orderRemark != null) {
-                if (order.indexOf("-----") >= 0) {
-                    builder.orderRemark(orderRemark);
-                    orderRemark = null;
-                } else {
-                    orderRemark += order.replace("요청 사항:", "").trim();
-                }
+            if (order.indexOf("[고객 연락처]") >= 0) {
+                orderPhoneIndex = index;
             }
 
             // 도로명 주소
-            if (order.indexOf("(도로명) ") >= 0) {
+            if (order.indexOf("(도로명)") >= 0) {
                 originalRoadAddress = "";
             }
             if (originalRoadAddress != null) {
@@ -89,40 +55,80 @@ public class ParserSHService {
                     originalRoadAddress = null;
                 } else {
                     // 지번 주소 개행분 추가
-                    originalRoadAddress += order.replace("(도로명) ", "");
+                    originalRoadAddress += order.replace("(도로명)", "");
                 }
             }
 
             // 지번 주소
-            if (order.indexOf("(지번) ") >= 0) {
+            if (order.indexOf("(지번)") >= 0) {
                 originalJibunAddress = "";
             }
             if (originalJibunAddress != null) {
-                if (order.indexOf("-----") >= 0) {
+                if (order.indexOf("[가게 사장님에게]") >= 0) {
                     // 지번 주소 끝
                     builder.originalJibunAddress(originalJibunAddress);
                     originalJibunAddress = null;
                 } else {
                     // 지번 주소 개행분 추가
-                    originalJibunAddress += order.replace("(지번) ", "");
+                    originalJibunAddress += order.replace("(지번)", "");
                 }
+            }
+
+            // 가게 요청 사항
+            if (order.indexOf("[가게 사장님에게]") >= 0) {
+                shopRemark = "";
+            }
+            if (shopRemark != null) {
+                if (order.indexOf("[배달 기사님에게]") >= 0 || order.indexOf("-----") >= 0) { // 포장의 경우 고려
+                    builder.shopRemark(shopRemark);
+                    shopRemark = null;
+                } else {
+                    shopRemark += order.replace("[가게 사장님에게]", "").trim();
+                }
+            }
+
+            // 배달 요청 사항
+            if (order.indexOf("[배달 기사님에게]") >= 0) {
+                orderRemark = "";
+            }
+            if (orderRemark != null) {
+                if (order.indexOf("-----") >= 0) {
+                    builder.orderRemark(orderRemark);
+                    orderRemark = null;
+                } else {
+                    orderRemark += order.replace("[배달 기사님에게]", "").trim();
+                }
+            }
+
+            // 배달팁 파싱
+            if (order.indexOf("배달비") >= 0) {
+                builder.orderFee(this.convertPrice(order.replace("배달비", "").trim()));
+            }
+
+            // 합계 파싱
+            if (order.indexOf("총 결제금액") >= 0) {
+                builder.orderSum(this.convertPrice(order.replace("총 결제금액", "").trim()));
             }
 
             // 원산지 파싱
-            if (order.indexOf("원산지: ") >= 0) {
+            if (order.indexOf("[원산지 표시]") >= 0) {
                 ingredientOrigins = "";
             }
             if (ingredientOrigins != null) {
-                if (encoded.indexOf("1D5601") >= 0) { // 종료
+                if (order.indexOf("------") >= 0) { // 종료
                     builder.ingredientOrigins(ingredientOrigins.trim());
                     ingredientOrigins = null;
                 } else {
-                    ingredientOrigins += order;
+                    ingredientOrigins += order.replace("[원산지 표시]", "");
                 }
             }
 
+            if (order.indexOf("[땡겨요]") >= 0 && order.indexOf("주문 전표") < 0) {
+                orderAppIndex = index;
+            }
+
             // 메뉴 리스트 파싱
-            if (order.indexOf("메뉴명                    수량        금액") >= 0) {
+            if (order.indexOf("메뉴명") >= 0 && order.indexOf("수량") >= 0 && order.indexOf("금액") >= 0) {
                 menuList = new ArrayList<>();
             }
             if (menuList != null) {
@@ -135,12 +141,41 @@ public class ParserSHService {
             ++index;
         }
 
-        builder.orderCarryType("D"); // 배달
+        if (orderTableIndex >= 0) {
+            String order = CommonUtil.decodeSH(encodingList.get(orderTableIndex + 1));
+            String[] splitParser = order.split(" ");
+            if (splitParser[0].indexOf("배달") >= 0) {
+                builder.orderCarryType("D"); // 배달
+            } else {
+                builder.orderCarryType("P"); // 포장
+            }
+            // 주문 번호 파싱
+            builder.orderNumber(splitParser[1]);
+
+            // 결제방식 파싱
+            order = CommonUtil.decodeSH(encodingList.get(orderTableIndex + 2));
+            builder.orderPayKind(this.convertOrderPayKind(order));
+        }
+
+        if (orderPhoneIndex >= 0) {
+            String order = CommonUtil.decodeSH(encodingList.get(orderPhoneIndex + 1));
+            builder.orderPhone(this.convertOrderPhone(order));
+        }
+
+        if (orderAppIndex >= 0) {
+            // 주문 일자
+            String order = CommonUtil.decodeSH(encodingList.get(orderAppIndex - 1));
+            builder.orderDate(this.convertOrderDate(order.trim()));
+            // 주문 매장
+            order = CommonUtil.decodeSH(encodingList.get(orderAppIndex - 2));
+            builder.orderStore(order.trim());
+        }
+
         return builder.build();
     }
 
     private void parserMenu(String order, ServerRequestDTO.ServerRequestDTOBuilder builder, ArrayList<MenuDTO> menuList, StringBuilder orderMenu) {
-        if (order.indexOf("메뉴명                    수량        금액") >= 0
+        if ((order.indexOf("메뉴명") >= 0 && order.indexOf("수량") >= 0 && order.indexOf("금액") >= 0)
                 || order.indexOf("-----") >= 0
                 || order.indexOf("주문금액") >= 0
                 || order.indexOf("배달비") >= 0) {
@@ -153,8 +188,8 @@ public class ParserSHService {
             if (order.startsWith(" +")) {
                 OptionDTO optionDTO = new OptionDTO();
                 optionDTO.setNum(String.valueOf(menuDTO.getOptionList().size() + 1));
-                optionDTO.setMenu(order.replace("- ", ""));
-                this.parseOptionPrice(order, optionDTO);
+                optionDTO.setMenu(order.replace(" + ", ""));
+                this.parseOptionPrice(order.replace(" + ", ""), optionDTO);
                 menuDTO.getOptionList().add(optionDTO);         // 메뉴에 옵션 추가
             } else { // 옵션 개행
                 // 마지막 option 가져오기
@@ -243,7 +278,7 @@ public class ParserSHService {
             String strPrice = this.convertPrice(order.substring(left + 1, right));
             try {
                 int price = Integer.parseInt(strPrice);
-                optionDTO.setMenu(order.substring(0, left).replace(" +", ""));
+                optionDTO.setMenu(order.substring(0, left).trim());
                 optionDTO.setPrice(String.valueOf(price));
             } catch (Exception e) {
                 // do nothing
@@ -256,7 +291,7 @@ public class ParserSHService {
             String strPrice = this.convertPrice(order.substring(left + 1));
             try {
                 int price = Integer.parseInt(strPrice);
-                optionDTO.setMenu(order.substring(0, left).replace(" +", ""));
+                optionDTO.setMenu(order.substring(0, left));
                 optionDTO.setPrice(String.valueOf(price));
             } catch (Exception e) {
                 // do nothing
@@ -265,17 +300,7 @@ public class ParserSHService {
     }
 
     private String convertOrderDate(String orderDate) {
-        // 요기요: 2022년 08월 24일(수) 오후04:38
-        String yyyyMMdd = orderDate.substring(0, 12).replace("년 ", "").replace("월 ", "");
-        String amPm = orderDate.substring(17, 19);
-        String hh = orderDate.substring(19, 21);
-        String mm = orderDate.substring(22);
-
-        if (amPm.indexOf("오후") >= 0) {
-            int intHH = Integer.parseInt(hh) + 12;
-            hh = String.valueOf(intHH);
-        }
-        return yyyyMMdd + hh + mm;
+        return orderDate.replace(".", "").replace(":", "").replace(" ", "").trim();
     }
 
     private String convertOrderPhone(String orderPhone) {
