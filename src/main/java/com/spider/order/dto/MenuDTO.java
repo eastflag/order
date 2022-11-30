@@ -14,17 +14,21 @@ import java.util.ArrayList;
 @NoArgsConstructor
 @AllArgsConstructor
 public class MenuDTO {
+    @Builder.Default
     @JsonProperty("Num")
-    private String num;
+    private String num = "";
 
+    @Builder.Default
     @JsonProperty("Menu")
-    private String menu;
+    private String menu = "";
 
+    @Builder.Default
     @JsonProperty("Quantity")
-    private String quantity;
+    private String quantity = "";
 
+    @Builder.Default
     @JsonProperty("Price")
-    private String price;
+    private String price = "";
 
     @JsonProperty("OptionList")
     private ArrayList<OptionDTO> optionList;
