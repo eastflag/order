@@ -105,6 +105,11 @@ public class ParserSHService {
                 builder.orderFee(this.convertPrice(order.replace("배달비", "").trim()));
             }
 
+            // 할인금액 파싱
+            if (order.indexOf("총 할인금액") >= 0) {
+                builder.orderDiscount(this.convertPrice(order.replace("총 할인금액", "").trim()));
+            }
+
             // 합계 파싱
             if (order.indexOf("총 결제금액") >= 0) {
                 builder.orderSum(this.convertPrice(order.replace("총 결제금액", "").trim()));
@@ -178,6 +183,7 @@ public class ParserSHService {
         if ((order.indexOf("메뉴명") >= 0 && order.indexOf("수량") >= 0 && order.indexOf("금액") >= 0)
                 || order.indexOf("-----") >= 0
                 || order.indexOf("주문금액") >= 0
+                || order.indexOf("할인금액") >= 0
                 || order.indexOf("배달비") >= 0) {
             // do nothing
         } else if (order.startsWith(" +")) {
@@ -207,7 +213,7 @@ public class ParserSHService {
     }
 
     // 메뉴 파싱이 되면 새로 생성된 MenuDTO가 리턴
-    private MenuDTO parseMenu(String order, ArrayList<MenuDTO> menuList) {
+    private void parseMenu(String order, ArrayList<MenuDTO> menuList) {
         MenuDTO menuDTO = null;
         if (menuList.size() > 0) {
             menuDTO = menuList.get(menuList.size() - 1);
@@ -220,40 +226,12 @@ public class ParserSHService {
             }
         }
 
-        if (menuParsingList.size() == 1) { // 메뉴제목, 메뉴제목 개행이 구분이 안된다. 그 다음에거롤 보고 판단한다.
-            // 메뉴 제목 개행이라고 가정하고 기존 menuDTO에 추가한다. 그리고 tempTitle에도 추가한다.
-            if (menuDTO == null) {
-                // 첫번째 줄인 경우
-                MenuDTO newMenuDTO = new MenuDTO();
-                newMenuDTO.setNum(String.valueOf(menuList.size() + 1));
-                newMenuDTO.setOptionList(new ArrayList<>());
-                newMenuDTO.setMenu(menuParsingList.get(0));
-                menuList.add(newMenuDTO); // 메뉴 리스트에 메뉴 추가
-            } else {
-                // 두번째 줄 이상인 경우: 기존 menuDTO에 넣는다.
-                menuDTO.setMenu(menuDTO.getMenu() + menuParsingList.get(0));
-                menuDTO.setTempTitle(menuParsingList.get(0));
-            }
-        }
-        if (menuParsingList.size() == 2) { // 수량, 가격이 개행되는 경우
-            if (menuDTO.getPrice() == null) {
-                // 두번째 줄인 경우
-                menuDTO.setQuantity(menuParsingList.get(0));
-                menuDTO.setPrice(this.convertPrice(menuParsingList.get(1)));
-            } else {
-                // MenuDTO의 menu에 추가된 것을 지운다.
-                menuDTO.setMenu(menuDTO.getMenu().replace(menuDTO.getTempTitle(), ""));
-                // 신규 MenuDTO를 만들어서 추가한다.
-                MenuDTO newMenuDTO = new MenuDTO();
-                newMenuDTO.setNum(String.valueOf(menuList.size() + 1));
-                newMenuDTO.setOptionList(new ArrayList<>());
-                newMenuDTO.setMenu(menuDTO.getTempTitle());
-                newMenuDTO.setQuantity(menuParsingList.get(0));
-                newMenuDTO.setPrice(this.convertPrice(menuParsingList.get(1)));
-                menuList.add(newMenuDTO); // 메뉴 리스트에 메뉴 추가
-            }
-        }
+        if (menuParsingList.size() == 1) { // 존재 안함.
 
+        }
+        if (menuParsingList.size() == 2) { //
+            // 할인 메뉴가 나열됨.
+        }
         if (menuParsingList.size() == 3) { // 메뉴 파싱, 신규 메뉴 생성하고 리턴
             MenuDTO newMenuDTO = new MenuDTO();
             newMenuDTO.setNum(String.valueOf(menuList.size() + 1));
@@ -263,9 +241,6 @@ public class ParserSHService {
             newMenuDTO.setPrice(this.convertPrice(menuParsingList.get(2)));
             // 메뉴 리스트에 메뉴 추가
             menuList.add(newMenuDTO);
-            return newMenuDTO;
-        } else {
-            return null;
         }
     }
 
