@@ -8,7 +8,7 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class OrderFeignClientConfig {
     @Bean
-    Logger.Level githubFeignClientLoggerLevel() {
+    Logger.Level orderFeignClientLoggerLevel() {
         return Logger.Level.FULL;
     }
 

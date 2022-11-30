@@ -4,3 +4,10 @@ spring:
       enabled: true
     restart:
       enabled: true
+
+server:
+  port: 9000
+
+agent:
+  server:
+    url: https://210.116.92.72:9280

@@ -1,7 +1,10 @@
 package com.spider.order.controller;
 
+import com.spider.order.client.OrderFeignClient;
 import com.spider.order.dto.AgentRequestDTO;
+import com.spider.order.dto.AgentResponseDTO;
 import com.spider.order.dto.ServerRequestDTO;
+import com.spider.order.dto.ServerResponseDTO;
 import com.spider.order.service.ParserBMService;
 import com.spider.order.service.ParserSHService;
 import com.spider.order.service.ParserYGService;
@@ -25,6 +28,8 @@ public class OrderController {
     private final ParserYGService parserYGService;
     private final ParserSHService parserSHService;
 
+    private final OrderFeignClient orderFeignClient;
+
     @PostMapping("/order")
     public ServerRequestDTO order(@RequestBody AgentRequestDTO agentRequestDTO) {
         String hexadecimal = agentRequestDTO.getRawData();
@@ -44,6 +49,58 @@ public class OrderController {
         }
 
         return serverRequestDTO;
+    }
+
+    @PostMapping("/neworder")
+    public AgentResponseDTO neworder(@RequestBody AgentRequestDTO agentRequestDTO) {
+        AgentResponseDTO agentResponseDTO = null;
+
+        try {
+            String hexadecimal = agentRequestDTO.getRawData();
+
+            String orderAppKind = this.checkOrderAppKind(hexadecimal);
+            log.info("orderAppKind: {}", orderAppKind);
+
+            List<String> resultList = this.getSplit(hexadecimal, orderAppKind.substring(0, 2));
+
+            ServerRequestDTO serverRequestDTO = this.parse(resultList, orderAppKind);
+            if (serverRequestDTO != null) {
+                serverRequestDTO.setOrderSeq(agentRequestDTO.getOrderSeq());
+                serverRequestDTO.setClientId(agentRequestDTO.getClientId());
+                serverRequestDTO.setClientToken(agentRequestDTO.getClientToken());
+                serverRequestDTO.setServiceProvider(agentRequestDTO.getServiceProvider());
+                serverRequestDTO.setClientName(agentRequestDTO.getClientName());
+            }
+
+            ServerResponseDTO serverResponseDTO = orderFeignClient.postNewOrder(serverRequestDTO);
+
+            if (serverResponseDTO.getResultCode().equals("0000")) {
+                agentResponseDTO = AgentResponseDTO.builder()
+                        .resultCode("0000")
+                        .resultMessage("성공")
+                        .orderSeq(agentRequestDTO.getOrderSeq())
+                        .orderNumber(serverRequestDTO.getOrderNumber())
+                        .build();
+            } else {
+                agentResponseDTO = AgentResponseDTO.builder()
+                        .resultCode(serverResponseDTO.getResultCode())
+                        .resultMessage(serverResponseDTO.getResultMessage())
+                        .orderSeq(serverResponseDTO.getOrderSeq())
+                        .orderNumber(serverResponseDTO.getOrderNumber())
+                        .build();
+
+            }
+        } catch (Exception e) {
+            log.error(e.getMessage());
+
+            agentResponseDTO = AgentResponseDTO.builder()
+                    .resultCode("0001")
+                    .resultMessage(e.getMessage())
+                    .orderSeq(agentRequestDTO.getOrderSeq())
+                    .build();
+        }
+
+        return agentResponseDTO;
     }
 
     private String checkOrderAppKind(String hexadecimal) {
