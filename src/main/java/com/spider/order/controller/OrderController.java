@@ -5,9 +5,7 @@ import com.spider.order.dto.AgentRequestDTO;
 import com.spider.order.dto.AgentResponseDTO;
 import com.spider.order.dto.ServerRequestDTO;
 import com.spider.order.dto.ServerResponseDTO;
-import com.spider.order.service.ParserBMService;
-import com.spider.order.service.ParserSHService;
-import com.spider.order.service.ParserYGService;
+import com.spider.order.service.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -24,6 +22,8 @@ import java.util.List;
 @RequiredArgsConstructor
 @Slf4j
 public class OrderController {
+    private final ParserBMoldService parserBMoldService;
+    private final ParserBMnewService parserBMnewService;
     private final ParserBMService parserBMService;
     private final ParserYGService parserYGService;
     private final ParserSHService parserSHService;
@@ -192,22 +192,22 @@ public class OrderController {
                 serverRequestDTO = parserBMService.parseBR_wrap(encodingList);
                 break;
             case "BM_one_new":
-                serverRequestDTO = parserBMService.parseBM_one_new(encodingList);
+                serverRequestDTO = parserBMnewService.parseOne(encodingList);
                 break;
             case "BM_one_old":
-                serverRequestDTO = parserBMService.parseBM_one_old(encodingList);
+                serverRequestDTO = parserBMoldService.parseOne(encodingList);
                 break;
             case "BM_new_del":
-                serverRequestDTO = parserBMService.parseBM_new_del(encodingList);
+                serverRequestDTO = parserBMnewService.parseDel(encodingList);
                 break;
             case "BM_new_wrap":
-                serverRequestDTO = parserBMService.parseBM_new_wrap(encodingList);
+                serverRequestDTO = parserBMnewService.parseWrap(encodingList);
                 break;
             case "BM_old_del":
-                serverRequestDTO = parserBMService.parseBM_old_del(encodingList);
+                serverRequestDTO = parserBMoldService.parseDel(encodingList);
                 break;
             case "BM_old_wrap":
-                serverRequestDTO = parserBMService.parseBM_old_wrap(encodingList);
+                serverRequestDTO = parserBMoldService.parseWrap(encodingList);
                 break;
             case "YG_del":
                 serverRequestDTO = parserYGService.parseYG_del(encodingList);

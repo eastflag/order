@@ -13,7 +13,7 @@ import java.util.List;
 
 @Service
 @Slf4j
-public class ParserBMService {
+public class ParserBMnewService {
     private static final int INITIAL = 0;
     private static final int MENU = 10;       // 메뉴 (3)
     private static final int MENU_TITLE = 11; // 메뉴 제목 (1)
@@ -22,7 +22,165 @@ public class ParserBMService {
     private static final int OPTION = 20; // 옵션 (1)
     private static final int OPTION_ADD = 21; // 옵션 개행 (1)
 
-    public ServerRequestDTO parseBR_del(List<String> encodingList) {
+
+    // 신배민 - 배달
+    public ServerRequestDTO parseDel(List<String> encodingList) {
+        ServerRequestDTO.ServerRequestDTOBuilder builder = ServerRequestDTO.builder();
+        int orderNumberIndex = -1;
+        int addressIndex = -1;
+        int phoneIndex = -1;
+        ArrayList<MenuDTO> menuList = null;
+        StringBuilder orderMenu = new StringBuilder();
+
+        int index = 0;
+        for (String encoded : encodingList) {
+            String order = CommonUtil.decode(encoded);
+
+            log.info("decoded: {}", order);
+            log.info("encoded: {}", encoded);
+
+            // 주문번호 파싱
+            if (order.indexOf("주문번호:") >= 0) {
+                builder.orderNumber(order.replace("주문번호:", "").trim());
+                orderNumberIndex = index;
+            }
+
+            // 결제방식 파싱
+            if (order.indexOf("결제방식") >= 0) {
+                builder.orderPayKind(this.convertOrderPayKind(order));
+            }
+
+            // 배달팁 파싱
+            if (order.indexOf("배달팁") >= 0) {
+                builder.orderFee(this.convertPrice(order.replace("배달팁", "").trim()));
+            }
+
+            // 합계 파싱
+            if (order.indexOf("합계(") >= 0) {
+                String[] splitOrders = order.split("  ");
+                builder.orderSum(this.convertPrice(splitOrders[splitOrders.length - 1]));
+            }
+
+            // 가게 요청 사항
+            if (order.indexOf("가게 :") >= 0) {
+                builder.shopRemark(order.split(":")[1].trim());
+            }
+            // 배달 요청 사항
+            if (order.indexOf("배달 :") >= 0) {
+                builder.orderRemark(order.split(":")[1].trim());
+            }
+
+            // 주소
+            if (order.indexOf("배달주소:") >= 0) {
+                addressIndex = index;
+            }
+            // 연락처
+            if (order.indexOf("연락처:") >= 0) {
+                phoneIndex = index;
+            }
+
+            // 메뉴 리스트 파싱
+            if (order.indexOf("메뉴명") >= 0 && order.indexOf("수량") >= 0 && order.indexOf("금액") >= 0) {
+                menuList = new ArrayList<>();
+            }
+            if (menuList != null) {
+                this.parserMenu(order, builder, menuList, orderMenu);
+            }
+            if (order.indexOf("합계") >= 0) {
+                menuList = null;
+            }
+
+            ++index;
+        }
+
+        // 주문일자 파싱
+        builder.orderDate(this.convertOrderDate(CommonUtil.decode(encodingList.get(orderNumberIndex + 1)).trim()));
+
+        // 주소 파싱
+        builder.originalJibunAddress(CommonUtil.decode(encodingList.get(addressIndex + 1)).trim());
+        builder.originalRoadAddress(CommonUtil.decode(encodingList.get(addressIndex + 2)).trim());
+
+        // 연락처
+        builder.orderPhone(this.convertOrderPhone(CommonUtil.decode(encodingList.get(phoneIndex + 1)).trim()));
+
+        builder.orderCarryType("D"); // 배달
+        return builder.build();
+    }
+
+    public ServerRequestDTO parseWrap(List<String> encodingList) {
+        ServerRequestDTO.ServerRequestDTOBuilder builder = ServerRequestDTO.builder();
+        int orderNumberIndex = -1;
+        int phoneIndex = -1;
+        ArrayList<MenuDTO> menuList = null;
+        StringBuilder orderMenu = new StringBuilder();
+        String shopRemark = null;
+
+        int index = 0;
+        for (String encoded : encodingList) {
+            String order = CommonUtil.decode(encoded);
+
+            log.info("decoded: {}", order);
+            log.info("encoded: {}", encoded);
+
+            // 주문번호 파싱
+            if (order.indexOf("주문번호:") >= 0) {
+                builder.orderNumber(order.replace("주문번호:", "").trim());
+                orderNumberIndex = index;
+            }
+
+            // 합계 파싱 & 결제 방식
+            if (order.indexOf("합계(") >= 0) {
+                String[] splitOrders = order.split("  ");
+                builder.orderSum(this.convertPrice(splitOrders[splitOrders.length - 1]));
+                // 결제방식
+                builder.orderPayKind(this.convertOrderPayKind(order));
+            }
+
+            // 가게 요청 사항
+            if (order.indexOf("요청사항:") >= 0) {
+                shopRemark = "";
+            }
+            if (shopRemark != null) {
+                if (order.indexOf("요청사항:") >= 0) {
+                    // do nothing
+                } else if (order.indexOf("----") >= 0) { // 파싱 종료
+                    builder.shopRemark(shopRemark);
+                    shopRemark = null;
+                } else {  // 파싱
+                    shopRemark += order.replace("가게 :", "").trim();
+                }
+            }
+
+            // 연락처
+            if (order.indexOf("연락처:") >= 0) {
+                phoneIndex = index;
+            }
+
+            // 메뉴 리스트 파싱
+            if (order.indexOf("메뉴명") >= 0 && order.indexOf("수량") >= 0 && order.indexOf("금액") >= 0) {
+                menuList = new ArrayList<>();
+            }
+            if (menuList != null) {
+                this.parserMenu(order, builder, menuList, orderMenu);
+            }
+            if (order.indexOf("합계") >= 0) {
+                menuList = null;
+            }
+
+            ++index;
+        }
+
+        // 주문일자 파싱
+        builder.orderDate(this.convertOrderDate(CommonUtil.decode(encodingList.get(orderNumberIndex + 1)).trim()));
+
+        // 연락처
+        builder.orderPhone(this.convertOrderPhone(CommonUtil.decode(encodingList.get(phoneIndex + 1)).trim()));
+
+        builder.orderCarryType("P"); // 픽업
+        return builder.build();
+    }
+
+    public ServerRequestDTO parseOne(List<String> encodingList) {
         ServerRequestDTO.ServerRequestDTOBuilder builder = ServerRequestDTO.builder();
         int orderNumberIndex = -1;
         int addressIndex = -1;
@@ -47,6 +205,11 @@ public class ParserBMService {
                 builder.orderPayKind(this.convertOrderPayKind(order));
             }
 
+            // 배달팁 파싱
+            if (order.indexOf("총 배달팁") >= 0) {
+                builder.orderFee(this.convertPrice(order.replace("총 배달팁", "").trim()));
+            }
+
             // 합계 파싱
             if (order.indexOf("합계(") >= 0) {
                 String[] splitOrders = order.split("  ");
@@ -55,23 +218,25 @@ public class ParserBMService {
 
             // 가게 요청 사항
             if (order.indexOf("가게 :") >= 0) {
-                builder.shopRemark(order.split(":")[1].trim());
+                builder.shopRemark(order.replace("가게 :", "").trim());
+
             }
             // 배달 요청 사항
             if (order.indexOf("배달 :") >= 0) {
-                builder.orderRemark(order.split(":")[1].trim());
+                builder.orderRemark(order.replace("배달 :", "").trim());
             }
 
             // 주소
             if (order.indexOf("배달주소:") >= 0) {
                 addressIndex = index;
             }
+            // 연락처
 
             // 메뉴 리스트 파싱
-            if (order.indexOf("메뉴명                     수량       금액") >= 0) {
+            if (order.indexOf("메뉴명") >= 0 && order.indexOf("수량") >= 0 && order.indexOf("금액") >= 0) {
                 menuList = new ArrayList<>();
             }
-            if (menuList != null && order.indexOf("메뉴명                     수량       금액") < 0) {
+            if (menuList != null) {
                 this.parserMenu(order, builder, menuList, orderMenu);
             }
             if (order.indexOf("합계") >= 0) {
@@ -83,96 +248,25 @@ public class ParserBMService {
 
         // 주문일자 파싱
         builder.orderDate(this.convertOrderDate(CommonUtil.decode(encodingList.get(orderNumberIndex + 1)).trim()));
-
-        // 원산지 파싱
-        builder.ingredientOrigins(CommonUtil.decode(encodingList.get(orderNumberIndex + 3)).trim());
 
         // 주소 파싱
         builder.originalJibunAddress(CommonUtil.decode(encodingList.get(addressIndex + 1)).trim());
 
-        builder.orderCarryType("A"); // 자체 배달
-        return builder.build();
-    }
-
-    public ServerRequestDTO parseBR_wrap(List<String> encodingList) {
-        ServerRequestDTO.ServerRequestDTOBuilder builder = ServerRequestDTO.builder();
-        int orderNumberIndex = -1;
-        int phoneIndex = -1;
-        ArrayList<MenuDTO> menuList = null;
-        StringBuilder orderMenu = new StringBuilder();
-
-        int index = 0;
-        for (String encoded : encodingList) {
-            String order = CommonUtil.decode(encoded);
-
-            log.info("decoded: {}", order);
-            log.info("encoded: {}", encoded);
-
-            // 주문번호 파싱
-            if (order.indexOf("주문번호:") >= 0) {
-                builder.orderNumber(order.replace("주문번호:", "").trim());
-                orderNumberIndex = index;
-            }
-
-            // 결제방식 파싱
-
-            // 합계 파싱
-            if (order.indexOf("합계(") >= 0) {
-                String[] splitOrders = order.split("  ");
-                builder.orderSum(this.convertPrice(splitOrders[splitOrders.length - 1]));
-            }
-
-            // 가게 요청 사항
-            if (order.indexOf("가게 :") >= 0) {
-                builder.shopRemark(order.split(":")[1].trim());
-            }
-            // 배달 요청 사항
-            if (order.indexOf("배달 :") >= 0) {
-                builder.orderRemark(order.split(":")[1].trim());
-            }
-
-            // 연락처
-            if (order.indexOf("연락처:") >= 0) {
-                phoneIndex = index;
-            }
-
-            // 메뉴 리스트 파싱
-            if (order.indexOf("메뉴명                     수량       금액") >= 0) {
-                menuList = new ArrayList<>();
-            }
-            if (menuList != null && order.indexOf("메뉴명                     수량       금액") < 0) {
-                this.parserMenu(order, builder, menuList, orderMenu);
-            }
-            if (order.indexOf("합계") >= 0) {
-                menuList = null;
-            }
-
-            ++index;
-        }
-
-        // 주문일자 파싱
-        builder.orderDate(this.convertOrderDate(CommonUtil.decode(encodingList.get(orderNumberIndex + 1)).trim()));
-
-        // 원산지 파싱
-        builder.ingredientOrigins(CommonUtil.decode(encodingList.get(orderNumberIndex + 3)).trim());
-
-        // 연락처 파싱
-        builder.orderPhone(this.convertOrderPhone(CommonUtil.decode(encodingList.get(phoneIndex + 1)).trim()));
-
-        builder.orderCarryType("P"); // 픽업(포장)
+        builder.orderCarryType("A"); // 자체배달
         return builder.build();
     }
 
     private void parserMenu(String order, ServerRequestDTO.ServerRequestDTOBuilder builder, ArrayList<MenuDTO> menuList, StringBuilder orderMenu) {
-        if (order.indexOf("------------------------------------------") >= 0 ||
-                order.indexOf("배달팁") >= 0) { // do nothing
+        if ((order.indexOf("메뉴명") >= 0 && order.indexOf("수량") >= 0 && order.indexOf("금액") >= 0)
+                || order.indexOf("-----") >= 0
+                || order.indexOf("배달팁") >= 0) { // do nothing
 
-        } else if (order.startsWith(" +") || (order.startsWith("  ") && !order.startsWith("    "))) {
-            // 메뉴 옵션 파싱, 메뉴 수량 개행은 제외
+        } else if (order.startsWith(" +") || (order.startsWith("  ") && !order.startsWith("     "))) {
+            // 옵션 파싱
             orderMenu.append(order); // 원본 메뉴
 
             MenuDTO menuDTO = menuList.get(menuList.size() - 1);
-            if (order.startsWith(" +")) {
+            if (order.startsWith(" +")) { // 옵션 추가
                 OptionDTO optionDTO = new OptionDTO();
                 optionDTO.setNum(String.valueOf(menuDTO.getOptionList().size() + 1));
                 optionDTO.setMenu(order.replace(" +", ""));
@@ -189,17 +283,12 @@ public class ParserBMService {
             builder.orderMenu(orderMenu.toString());
         } else { // 메뉴 파싱
             orderMenu.append(order); // 원본 메뉴
+
             this.parseMenu(order, menuList);
         }
     }
 
-    // 메뉴 파싱이 되면 새로 생성된 MenuDTO가 리턴
-    private MenuDTO parseMenu(String order, ArrayList<MenuDTO> menuList) {
-        MenuDTO menuDTO = null;
-        if (menuList.size() > 0) {
-            menuDTO = menuList.get(menuList.size() - 1);
-        }
-
+    private void parseMenu(String order, ArrayList<MenuDTO> menuList) {
         List<String> menuParsingList = new ArrayList<>();
         for (String item : order.split("  ")) {
             if (StringUtils.hasText(item.trim())) {
@@ -207,52 +296,38 @@ public class ParserBMService {
             }
         }
 
-        if (menuParsingList.size() == 1) { // 메뉴제목, 메뉴제목 개행이 구분이 안된다. 그 다음에거롤 보고 판단한다.
-            // 메뉴 제목 개행이라고 가정하고 기존 menuDTO에 추가한다. 그리고 tempTitle에도 추가한다.
-            if (menuDTO == null) {
-                // 첫번째 줄인 경우
-                MenuDTO newMenuDTO = new MenuDTO();
-                newMenuDTO.setNum(String.valueOf(menuList.size() + 1));
-                newMenuDTO.setOptionList(new ArrayList<>());
-                newMenuDTO.setMenu(menuParsingList.get(0));
-                menuList.add(newMenuDTO); // 메뉴 리스트에 메뉴 추가
-            } else {
-                // 두번째 줄 이상인 경우: 기존 menuDTO에 넣는다.
-                menuDTO.setMenu(menuDTO.getMenu() + menuParsingList.get(0));
-                menuDTO.setTempTitle(menuParsingList.get(0));
-            }
+        if (menuParsingList.size() == 1) { // 메뉴명만 존재하는 경우
+            MenuDTO newMenuDTO = new MenuDTO();
+            newMenuDTO.setNum(String.valueOf(menuList.size() + 1));
+            newMenuDTO.setOptionList(new ArrayList<>());
+            newMenuDTO.setMenu(menuParsingList.get(0));
+            menuList.add(newMenuDTO); // 메뉴 리스트에 메뉴 추가
         }
-        if (menuParsingList.size() == 2) { // 수량, 가격이 개행되는 경우
-            if (menuDTO.getPrice() == null) {
-                // 두번째 줄인 경우
+        if (menuParsingList.size() == 2) {
+            if (order.startsWith("     ")) { // 수량, 가격이 개행되는 경우,
+                MenuDTO menuDTO = menuList.get(menuList.size() - 1);
                 menuDTO.setQuantity(menuParsingList.get(0));
                 menuDTO.setPrice(this.convertPrice(menuParsingList.get(1)));
-            } else {
-                // MenuDTO의 menu에 추가된 것을 지운다.
-                menuDTO.setMenu(menuDTO.getMenu().replace(menuDTO.getTempTitle(), ""));
-                // 신규 MenuDTO를 만들어서 추가한다.
+            } else { // 메뉴명과 수량이 붙어서 오는 경우: 프리미엄 프루타 멜론(600g) 1        24,500
+                int lastIndex = menuParsingList.get(0).lastIndexOf(" ");
+
                 MenuDTO newMenuDTO = new MenuDTO();
                 newMenuDTO.setNum(String.valueOf(menuList.size() + 1));
                 newMenuDTO.setOptionList(new ArrayList<>());
-                newMenuDTO.setMenu(menuDTO.getTempTitle());
-                newMenuDTO.setQuantity(menuParsingList.get(0));
+                newMenuDTO.setMenu(menuParsingList.get(0).substring(0, lastIndex));
+                newMenuDTO.setQuantity(menuParsingList.get(0).substring(lastIndex + 1));
                 newMenuDTO.setPrice(this.convertPrice(menuParsingList.get(1)));
-                menuList.add(newMenuDTO); // 메뉴 리스트에 메뉴 추가
+                menuList.add(newMenuDTO);
             }
         }
-
-        if (menuParsingList.size() == 3) { // 메뉴 파싱, 신규 메뉴 생성하고 리턴
+        if (menuParsingList.size() == 3) { // 메뉴 파싱
             MenuDTO newMenuDTO = new MenuDTO();
             newMenuDTO.setNum(String.valueOf(menuList.size() + 1));
             newMenuDTO.setOptionList(new ArrayList<>());
             newMenuDTO.setMenu(menuParsingList.get(0));
             newMenuDTO.setQuantity(menuParsingList.get(1));
             newMenuDTO.setPrice(this.convertPrice(menuParsingList.get(2)));
-            // 메뉴 리스트에 메뉴 추가
             menuList.add(newMenuDTO);
-            return newMenuDTO;
-        } else {
-            return null;
         }
     }
 
