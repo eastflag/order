@@ -275,7 +275,7 @@ public class ParserBMnewService {
             } else { // 옵션 개행
                 // 마지막 option 가져오기
                 OptionDTO optionDTO = menuDTO.getOptionList().get(menuDTO.getOptionList().size() - 1);
-                optionDTO.setMenu(optionDTO.getMenu() + order.trim());
+                optionDTO.setMenu(optionDTO.getMenu() + order.substring(2)); //4000원 이 개행될 경우 파싱하도록
                 this.parseOptionPrice(optionDTO.getMenu(), optionDTO);
             }
         } else if (order.indexOf("합계") >= 0) { // 메뉴 파싱 종료
