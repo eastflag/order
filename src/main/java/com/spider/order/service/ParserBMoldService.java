@@ -89,12 +89,17 @@ public class ParserBMoldService {
             }
 
             // 지번 주소
-            if (order.indexOf("배달주소 :") >= 0 && order.indexOf("배달주소 : ") < 0) {
+            if (order.indexOf("배달주소 :") >= 0) {
                 originalJibunAddress = "";
             }
             if (originalJibunAddress != null) {
                 if (order.indexOf("배달주소 :") >= 0) {
-                    originalJibunAddress = order.replace("배달주소 :", "").trim();
+                    // 배달주소가 개행되지 않는 예외처리 추가
+                    if (order.startsWith("배달주소")) {
+                        originalJibunAddress = order.replace("배달주소 :", "").replaceAll("^\\s+", "");
+                    } else {
+                        originalJibunAddress = order.split("배달주소 :")[1].replaceAll("^\\s+", "");
+                    }
                 } else if (order.indexOf("(도로명)") >= 0) {
                     // 지번 주소 끝
                     builder.originalJibunAddress(originalJibunAddress);
@@ -111,7 +116,7 @@ public class ParserBMoldService {
             if (originalRoadAddress != null) {
                 if (order.indexOf("(도로명)") >= 0) {
                     // 도로명 주소 시작
-                    originalRoadAddress = order.replace("(도로명)", "").trim();
+                    originalRoadAddress = order.replace("(도로명)", "").replaceAll("^\\s+", "");
                 } else if (order.indexOf("연락처") >= 0) {
                     // 도로명 주소 끝
                     builder.originalRoadAddress(originalRoadAddress);
