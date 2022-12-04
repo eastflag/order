@@ -167,8 +167,7 @@ public class ParserYGService {
                 orderDate = "";
             }
             if (orderDate != null) {
-                if (order.indexOf("방문 시간") >= 0
-                ) {
+                if (order.indexOf("방문 시간") >= 0) {
                     builder.orderDate(this.convertOrderDate(orderDate));
                     orderDate = null;
                 } else {
@@ -277,6 +276,7 @@ public class ParserYGService {
 
     public ServerRequestDTO parseYE(List<String> encodingList) {
         ServerRequestDTO.ServerRequestDTOBuilder builder = ServerRequestDTO.builder();
+        String orderDate = null;
         String orderRemark = null;
         String originalJibunAddress = null;
         String originalRoadAddress = null;
@@ -295,9 +295,17 @@ public class ParserYGService {
                 builder.orderNumber(order.replace("주문 번호:", "").trim());
             }
 
-            // 주문 일자
+            // 주문 일자: 주문폭인 좁은 경우 예외처리 포함.
             if (order.indexOf("주문 일자:") >= 0) {
-                builder.orderDate(this.convertOrderDate(order.replace("주문 일자:", "").trim()));
+                orderDate = "";
+            }
+            if (orderDate != null) {
+                if (order.indexOf("-----") >= 0) {
+                    builder.orderDate(this.convertOrderDate(orderDate));
+                    orderDate = null;
+                } else {
+                    orderDate += order.replace("주문 일자: ", "");
+                }
             }
 
             // 주문 매장
@@ -430,6 +438,12 @@ public class ParserYGService {
             }
 
             if (menuParsingList.size() == 1) { // 메뉴개행, 옵션개행 구분이 안된다. 이전꺼를 보고 판단.
+                // 메뉴 첫줄에 아래와 같이 홍보 문구가 오는 경우 예외처리
+                // ※ 청년의 안내 사항: (행사안  1
+                // 내) 사이즈 업업 행사중
+                if (menuList.size() == 0) {
+                    return;
+                }
                 MenuDTO menuDTO = menuList.get(menuList.size() - 1);
 
                 if (this.menuState == 1) { // 메뉴 개행
