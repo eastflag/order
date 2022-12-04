@@ -1,6 +1,6 @@
 package com.spider.order;
 
-import com.spider.order.service.ParserBMService;
+import com.spider.order.service.ParserBRService;
 import com.spider.order.util.CommonUtil;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,7 +12,7 @@ import java.util.List;
 @SpringBootTest
 class OrderApplicationTests {
     @Autowired
-    private ParserBMService parserBMService;
+    private ParserBRService parserBMService;
 
     @Test
     void test1() {

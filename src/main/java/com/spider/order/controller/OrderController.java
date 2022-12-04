@@ -24,9 +24,10 @@ import java.util.List;
 public class OrderController {
     private final ParserBMoldService parserBMoldService;
     private final ParserBMnewService parserBMnewService;
-    private final ParserBMService parserBMService;
+    private final ParserBRService parserBMService;
     private final ParserYGService parserYGService;
     private final ParserSHService parserSHService;
+    private final ParserDIService parserDIService;
 
     private final OrderFeignClient orderFeignClient;
 
@@ -116,6 +117,14 @@ public class OrderController {
             }
         } else if (hexadecimal.indexOf("B6AFB0DCBFE4") >= 0) { // "땡겨요"
             orderAppKind = "SH";
+        } else if (hexadecimal.indexOf("B5CE2020C0D52020C6C02020B9E82020B4DE") >= 0) { // 두  잇  팀  배  달
+            orderAppKind = "DI";
+        } else if (hexadecimal.indexOf("636F7570616E672065617473") >= 0) { // coupang eats
+            orderAppKind = "CP";
+        } else if (hexadecimal.indexOf("B9E8B4DEC6AFB1DE") >= 0) { // 배달특급
+            orderAppKind = "TG";
+        } else if (hexadecimal.indexOf("B8D4B1FABAF1") >= 0) { // 먹깨비
+            orderAppKind = "MG";
         } else if (hexadecimal.indexOf("C1D6B9AEB9F8C8A33A5430") >= 0) { // C1D6B9AEB9F8C8A33A5430, 배민라이더스
             if (hexadecimal.indexOf("B9E8B4DE20C1D6B9AEC0FCC7A5") >= 0) { // 배달 주문전표, 배달
                 orderAppKind = "BR_del";
@@ -220,6 +229,9 @@ public class OrderController {
                 break;
             case "SH":
                 serverRequestDTO = parserSHService.parseSH(encodingList);
+                break;
+            case "DI":
+                serverRequestDTO = parserDIService.parse(encodingList);
                 break;
         }
 

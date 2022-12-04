@@ -13,7 +13,7 @@ import java.util.List;
 
 @Service
 @Slf4j
-public class ParserBMService {
+public class ParserBRService {
     private static final int INITIAL = 0;
     private static final int MENU = 10;       // 메뉴 (3)
     private static final int MENU_TITLE = 11; // 메뉴 제목 (1)
