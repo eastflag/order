@@ -19,6 +19,7 @@ public class ParserYGService {
 
     public ServerRequestDTO parseYG_del(List<String> encodingList) {
         ServerRequestDTO.ServerRequestDTOBuilder builder = ServerRequestDTO.builder();
+        String orderDate = null;
         String orderRemark = null;
         String originalJibunAddress = null;
         String originalRoadAddress = null;
@@ -37,9 +38,17 @@ public class ParserYGService {
                 builder.orderNumber(order.replace("주문 번호:", "").trim());
             }
 
-            // 주문 일자
+            // 주문 일자: 주문폭이 좁은 경우 처리도 포함.
             if (order.indexOf("주문 일자:") >= 0) {
-                builder.orderDate(this.convertOrderDate(order.replace("주문 일자:", "").trim()));
+                orderDate = "";
+            }
+            if (orderDate != null) {
+                if (order.indexOf("-----") >= 0) {
+                    builder.orderDate(this.convertOrderDate(orderDate));
+                    orderDate = null;
+                } else {
+                    orderDate += order.replace("주문 일자: ", "");
+                }
             }
 
             // 주문 매장
