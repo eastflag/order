@@ -6,6 +6,8 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.List;
 
@@ -109,8 +111,14 @@ class OrderApplicationTests {
 
     @Test
     void test5() {
-        String orderAppKind = "YE";
-        System.out.println(orderAppKind.substring(0, 2));
+        System.out.println("002: 채소만 포케".matches("^\\d{3}:(.*)"));
+        System.out.println("002: 채소만 포케".matches("^...:"));
+    }
+
+    @Test
+    void test6() {
+        LocalDateTime localDateTime = LocalDateTime.parse("2022-11-15T11:11:47.605917");
+        System.out.println(localDateTime.format(DateTimeFormatter.ofPattern("yyyyMMddHHmm")));
 
     }
 }

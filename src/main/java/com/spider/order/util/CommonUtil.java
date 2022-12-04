@@ -148,4 +148,36 @@ public class CommonUtil {
 
         return result;
     }
+
+    public static String decodeDI(String hexadecimal) {
+        String result = null;
+
+        hexadecimal = hexadecimal.replace("1B6101", "");
+        hexadecimal = hexadecimal.replace("1B6100", "");
+        hexadecimal = hexadecimal.replace("1B4D00", "");
+        hexadecimal = hexadecimal.replace("1B4501", "");
+        hexadecimal = hexadecimal.replace("1B4500", "");
+        hexadecimal = hexadecimal.replace("1B2D00", "");
+        hexadecimal = hexadecimal.replace("1B35", "");
+        hexadecimal = hexadecimal.replace("1D2111", "");
+        hexadecimal = hexadecimal.replace("1D2101", "");
+        hexadecimal = hexadecimal.replace("1D2100", "");
+
+        int len = hexadecimal.length();
+        byte[] ans = new byte[len / 2];
+
+        for (int i = 0; i < len; i += 2) {
+            // using left shift operator on every character
+            ans[i / 2] = (byte) ((Character.digit(hexadecimal.charAt(i), 16) << 4)
+                    + Character.digit(hexadecimal.charAt(i + 1), 16));
+        }
+
+        try {
+            result = new String(ans, "euc-kr");
+        } catch (UnsupportedEncodingException e) {
+
+        }
+
+        return result;
+    }
 }

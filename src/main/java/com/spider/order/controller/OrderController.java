@@ -160,6 +160,7 @@ public class OrderController {
                 splitChar = "0D0A";
                 break;
             case "SH":
+            case "DI":
                 splitChar = "0A";
                 break;
             default:
@@ -168,7 +169,7 @@ public class OrderController {
         }
         List<String> encodedList;
 
-        if (orderAppKind.equals("SH")) {
+        if (orderAppKind.equals("SH") || orderAppKind.equals("DI")) {
             // SH의 경우 10A1 처럼 홀수인덱스가 선택될수 있다.
             encodedList = new ArrayList<>();
             StringBuilder stingBuilder = new StringBuilder();
