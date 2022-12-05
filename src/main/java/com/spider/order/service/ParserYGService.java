@@ -133,7 +133,7 @@ public class ParserYGService {
             }
 
             // 메뉴 리스트 파싱
-            if (order.indexOf("메뉴명                      수량      가격") >= 0) {
+            if (order.indexOf("메뉴명") >= 0 && order.indexOf("수량") >= 0 && order.indexOf("가격") >= 0) {
                 menuList = new ArrayList<>();
             }
             if (menuList != null) {
@@ -399,7 +399,7 @@ public class ParserYGService {
             }
 
             // 메뉴 리스트 파싱
-            if (order.indexOf("메뉴명                      수량      가격") >= 0) {
+            if (order.indexOf("메뉴명") >= 0 && order.indexOf("수량") >= 0 && order.indexOf("가격") >= 0) {
                 menuList = new ArrayList<>();
             }
             if (menuList != null) {
