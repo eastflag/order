@@ -28,6 +28,9 @@ public class OrderController {
     private final ParserYGService parserYGService;
     private final ParserSHService parserSHService;
     private final ParserDIService parserDIService;
+    private final ParserCPService parserCPService;
+    private final ParserTGService parserTGService;
+    private final ParserMGService parserMGService;
 
     private final OrderFeignClient orderFeignClient;
 
@@ -157,6 +160,7 @@ public class OrderController {
         switch (orderAppKind) {
             case "YG":
             case "YE":
+            case "TG":
                 splitChar = "0D0A";
                 break;
             case "SH":
@@ -233,6 +237,15 @@ public class OrderController {
                 break;
             case "DI":
                 serverRequestDTO = parserDIService.parse(encodingList);
+                break;
+            case "CP":
+                serverRequestDTO = parserCPService.parse(encodingList);
+                break;
+            case "TG":
+                serverRequestDTO = parserTGService.parse(encodingList);
+                break;
+            case "MG":
+                serverRequestDTO = parserMGService.parse(encodingList);
                 break;
         }
 
