@@ -90,7 +90,7 @@ public class ParserDIService {
             ++index;
         }
 
-        builder.orderCarryType("D");
+        builder.orderCarryType("A");
 
         return builder.build();
     }

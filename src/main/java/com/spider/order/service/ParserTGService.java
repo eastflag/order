@@ -17,14 +17,10 @@ public class ParserTGService {
 
     public ServerRequestDTO parse(List<String> encodingList) {
         ServerRequestDTO.ServerRequestDTOBuilder builder = ServerRequestDTO.builder();
-        int orderTableIndex = -1; // 주문 전표
-        int orderPhoneIndex = -1;
-        String originalJibunAddress = null;
         String originalRoadAddress = null;
         String orderRemark = null;
         String shopRemark = null;
         String ingredientOrigins = null;
-        int orderAppIndex = -1;
         ArrayList<MenuDTO> menuList = null;
         StringBuilder orderMenu = new StringBuilder();
 
@@ -130,10 +126,6 @@ public class ParserTGService {
                 }
             }
 
-            if (order.indexOf("[땡겨요]") >= 0 && order.indexOf("주문 전표") < 0) {
-                orderAppIndex = index;
-            }
-
             // 메뉴 리스트 파싱
             if (order.indexOf("메 뉴 명") >= 0 && order.indexOf("수 량") >= 0 && order.indexOf("금 액") >= 0) {
                 menuList = new ArrayList<>();
@@ -148,7 +140,7 @@ public class ParserTGService {
             ++index;
         }
 
-        builder.orderCarryType("D");
+        builder.orderCarryType("A");
 
         return builder.build();
     }
@@ -178,6 +170,7 @@ public class ParserTGService {
                     optionDTO.setMenu(order.replace("- ", ""));
                     menuDTO.getOptionList().add(optionDTO);         // 메뉴에 옵션 추가
                 }
+                log.info(menuDTO.toString());
             } else { // 옵션 개행
                 if (menuParsingList.size() == 3) {
                     OptionDTO optionDTO = menuDTO.getOptionList().get(menuDTO.getOptionList().size() - 1);
@@ -185,6 +178,7 @@ public class ParserTGService {
                     optionDTO.setQuantity(menuParsingList.get(1));
                     optionDTO.setPrice(this.convertPrice(menuParsingList.get(2)));
                 }
+                log.info(menuDTO.toString());
             }
         } else if (order.indexOf("총 결제금액") >= 0) { // 메뉴 파싱 종료
             builder.orderMenuList(menuList);
@@ -209,8 +203,8 @@ public class ParserTGService {
             }
         }
 
-        if (menuParsingList.size() == 1) { // 파악 안됨
-
+        if (menuParsingList.size() == 1) { // 메뉴명 개행
+            menuDTO.setMenu(menuDTO.getMenu() + order);
         }
         if (menuParsingList.size() == 2) { // 파악 안됨
 

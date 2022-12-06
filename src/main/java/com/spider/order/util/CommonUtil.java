@@ -188,8 +188,10 @@ public class CommonUtil {
         hexadecimal = hexadecimal.replace("1B6100", "");
         hexadecimal = hexadecimal.replace("1B2138", "");
         hexadecimal = hexadecimal.replace("1B2118", "");
+        hexadecimal = hexadecimal.replace("1B2110", "");
         hexadecimal = hexadecimal.replace("1B2108", "");
         hexadecimal = hexadecimal.replace("1B2100", "");
+        hexadecimal = hexadecimal.replace("1B2101", "");
         hexadecimal = hexadecimal.replace("1B40", "");
 
         int len = hexadecimal.length();
