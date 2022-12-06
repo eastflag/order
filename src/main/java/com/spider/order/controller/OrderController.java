@@ -161,6 +161,7 @@ public class OrderController {
             case "YG":
             case "YE":
             case "TG":
+            case "CP":
                 splitChar = "0D0A";
                 break;
             case "SH":

@@ -31,7 +31,7 @@ public class ParserCPService {
         int index = 0;
         for (String encoded : encodingList) {
             log.info("encoded: {}", encoded);
-            String order = CommonUtil.decodeSH(encoded);
+            String order = CommonUtil.decodeCP(encoded);
             log.info("decoded: {}", order);
 
             // 주문 번호, 배달 or 포장
@@ -147,7 +147,7 @@ public class ParserCPService {
         }
 
         if (orderTableIndex >= 0) {
-            String order = CommonUtil.decodeSH(encodingList.get(orderTableIndex + 1));
+            String order = CommonUtil.decodeCP(encodingList.get(orderTableIndex + 1));
             String[] splitParser = order.split(" ");
             if (splitParser[0].indexOf("배달") >= 0) {
                 builder.orderCarryType("D"); // 배달
@@ -158,21 +158,21 @@ public class ParserCPService {
             builder.orderNumber(splitParser[1]);
 
             // 결제방식 파싱
-            order = CommonUtil.decodeSH(encodingList.get(orderTableIndex + 2));
+            order = CommonUtil.decodeCP(encodingList.get(orderTableIndex + 2));
             builder.orderPayKind(this.convertOrderPayKind(order));
         }
 
         if (orderPhoneIndex >= 0) {
-            String order = CommonUtil.decodeSH(encodingList.get(orderPhoneIndex + 1));
+            String order = CommonUtil.decodeCP(encodingList.get(orderPhoneIndex + 1));
             builder.orderPhone(this.convertOrderPhone(order));
         }
 
         if (orderAppIndex >= 0) {
             // 주문 일자
-            String order = CommonUtil.decodeSH(encodingList.get(orderAppIndex - 1));
+            String order = CommonUtil.decodeCP(encodingList.get(orderAppIndex - 1));
             builder.orderDate(this.convertOrderDate(order.trim()));
             // 주문 매장
-            order = CommonUtil.decodeSH(encodingList.get(orderAppIndex - 2));
+            order = CommonUtil.decodeCP(encodingList.get(orderAppIndex - 2));
             builder.orderStore(order.trim());
         }
 
