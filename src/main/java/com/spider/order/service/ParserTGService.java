@@ -168,7 +168,7 @@ public class ParserTGService {
                 if (menuParsingList.size() == 3) {
                     OptionDTO optionDTO = new OptionDTO();
                     optionDTO.setNum(String.valueOf(menuDTO.getOptionList().size() + 1));
-                    optionDTO.setMenu(order.replaceAll("  :", "").replaceAll("^\\s+", ""));
+                    optionDTO.setMenu(menuParsingList.get(0).replace(":", "").replaceAll("^\\s+", ""));
                     optionDTO.setQuantity(menuParsingList.get(1));
                     optionDTO.setPrice(this.convertPrice(menuParsingList.get(2)));
                     menuDTO.getOptionList().add(optionDTO);
