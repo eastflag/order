@@ -149,9 +149,10 @@ public class ParserTGService {
         if ((order.indexOf("메 뉴 명") >= 0 && order.indexOf("수 량") >= 0 && order.indexOf("금 액") >= 0)
                 || order.indexOf("-----") >= 0
                 || order.indexOf("이벤트 할인") >= 0
-                || order.indexOf("배달비") >= 0) {
+                || order.indexOf("배달비") >= 0
+                || order.startsWith("- ")) {
             // do nothing
-        } else if (order.startsWith("- ") || (order.startsWith("  ") && !order.startsWith("    "))) {
+        } else if (order.startsWith("  :") || (order.startsWith("   ") && !order.startsWith("     "))) {
             // 메뉴 옵션 파싱, 메뉴 수량 개행은 제외
             orderMenu.append(order); // 원본 메뉴
 
@@ -163,15 +164,6 @@ public class ParserTGService {
             }
 
             MenuDTO menuDTO = menuList.get(menuList.size() - 1);
-            if (order.startsWith("- ")) {
-                // do nothing
-//                if (menuParsingList.size() == 1) {
-//                    OptionDTO optionDTO = new OptionDTO();
-//                    optionDTO.setNum(String.valueOf(menuDTO.getOptionList().size() + 1));
-//                    optionDTO.setMenu(order.replace("- ", ""));
-//                    menuDTO.getOptionList().add(optionDTO);         // 메뉴에 옵션 추가
-//                }
-            }
             if (order.startsWith("  :")) { // 옵션
                 if (menuParsingList.size() == 3) {
                     OptionDTO optionDTO = new OptionDTO();
@@ -180,11 +172,11 @@ public class ParserTGService {
                     optionDTO.setQuantity(menuParsingList.get(1));
                     optionDTO.setPrice(this.convertPrice(menuParsingList.get(2)));
                     menuDTO.getOptionList().add(optionDTO);
-                } else { // 옵션 개행
-                    // 확인 안됨
-                    OptionDTO optionDTO = menuDTO.getOptionList().get(menuDTO.getOptionList().size() - 1);
-                    optionDTO.setMenu(optionDTO.getMenu() + menuParsingList.get(0));
                 }
+            } else { // 옵션 개행
+                // 확인 안됨
+                OptionDTO optionDTO = menuDTO.getOptionList().get(menuDTO.getOptionList().size() - 1);
+                optionDTO.setMenu(optionDTO.getMenu() + menuParsingList.get(0));
             }
         } else if (order.indexOf("총 결제금액") >= 0) { // 메뉴 파싱 종료
             builder.orderMenuList(menuList);
