@@ -34,176 +34,96 @@ public class ParserCPService {
             String order = CommonUtil.decodeCP(encoded);
             log.info("decoded: {}", order);
 
-            // 주문 번호, 배달 or 포장
-            if (order.indexOf("주문 전표") >= 0) {
-                orderTableIndex = index;
-            }
-
-            // 연락처
-            if (order.indexOf("[고객 연락처]") >= 0) {
-                orderPhoneIndex = index;
-            }
-
-            // 도로명 주소
-            if (order.indexOf("(도로명)") >= 0) {
-                originalRoadAddress = "";
-            }
-            if (originalRoadAddress != null) {
-                if (order.indexOf("(지번)") >= 0) {
-                    // 도로명 주소 끝
-                    builder.originalRoadAddress(originalRoadAddress);
-                    originalRoadAddress = null;
-                } else {
-                    // 지번 주소 개행분 추가
-                    originalRoadAddress += order.replace("(도로명)", "");
-                }
-            }
-
-            // 지번 주소
-            if (order.indexOf("(지번)") >= 0) {
-                originalJibunAddress = "";
-            }
-            if (originalJibunAddress != null) {
-                if (order.indexOf("[가게 사장님에게]") >= 0) {
-                    // 지번 주소 끝
-                    builder.originalJibunAddress(originalJibunAddress);
-                    originalJibunAddress = null;
-                } else {
-                    // 지번 주소 개행분 추가
-                    originalJibunAddress += order.replace("(지번)", "");
-                }
-            }
-
-            // 가게 요청 사항
-            if (order.indexOf("[가게 사장님에게]") >= 0) {
-                shopRemark = "";
-            }
-            if (shopRemark != null) {
-                if (order.indexOf("[배달 기사님에게]") >= 0 || order.indexOf("-----") >= 0) { // 포장의 경우 고려
-                    builder.shopRemark(shopRemark);
-                    shopRemark = null;
-                } else {
-                    shopRemark += order.replace("[가게 사장님에게]", "").trim();
-                }
-            }
-
-            // 배달 요청 사항
-            if (order.indexOf("[배달 기사님에게]") >= 0) {
-                orderRemark = "";
-            }
-            if (orderRemark != null) {
-                if (order.indexOf("-----") >= 0) {
-                    builder.orderRemark(orderRemark);
-                    orderRemark = null;
-                } else {
-                    orderRemark += order.replace("[배달 기사님에게]", "").trim();
-                }
-            }
-
-            // 배달팁 파싱
+            // 배달비 파싱
             if (order.indexOf("배달비") >= 0) {
                 builder.orderFee(this.convertPrice(order.replace("배달비", "").trim()));
             }
 
-            // 할인금액 파싱
-            if (order.indexOf("총 할인금액") >= 0) {
-                builder.orderDiscount(this.convertPrice(order.replace("총 할인금액", "").trim()));
+            // 합계 파싱
+            if (order.indexOf("총결제금액") >= 0) {
+                builder.orderSum(this.convertPrice(order.replace("총결제금액", "").trim()));
             }
 
-            // 합계 파싱
-            if (order.indexOf("총 결제금액") >= 0) {
-                builder.orderSum(this.convertPrice(order.replace("총 결제금액", "").trim()));
+            // 거래 일시
+            if (order.indexOf("거래일시:") >= 0) {
+                builder.orderDate(this.convertOrderDate(order.replace("거래일시:", "").trim()));
+            }
+
+            // 주문매장:
+            if (order.indexOf("주문매장:") >= 0) {
+                builder.orderStore(order.replace("주문매장:", "").trim());
             }
 
             // 원산지 파싱
-            if (order.indexOf("[원산지 표시]") >= 0) {
+            if (order.indexOf("원산지 정보:") >= 0) {
                 ingredientOrigins = "";
             }
             if (ingredientOrigins != null) {
-                if (order.indexOf("------") >= 0) { // 종료
+                if (order.indexOf("쿠팡이츠 고객센터") >= 0) { // 종료
                     builder.ingredientOrigins(ingredientOrigins.trim());
                     ingredientOrigins = null;
                 } else {
-                    ingredientOrigins += order.replace("[원산지 표시]", "");
+                    ingredientOrigins += order.replace("원산지 정보: ", "");
                 }
             }
 
-            if (order.indexOf("[땡겨요]") >= 0 && order.indexOf("주문 전표") < 0) {
-                orderAppIndex = index;
-            }
-
             // 메뉴 리스트 파싱
-            if (order.indexOf("메뉴명") >= 0 && order.indexOf("수량") >= 0 && order.indexOf("금액") >= 0) {
+            if (order.indexOf("메뉴") >= 0 && order.indexOf("수량") >= 0 && order.indexOf("금액") >= 0) {
                 menuList = new ArrayList<>();
             }
             if (menuList != null) {
                 this.parserMenu(order, builder, menuList, orderMenu);
             }
-            if (order.indexOf("총 결제금액") >= 0) {
+            if (order.indexOf("총결제금액") >= 0) {
                 menuList = null;
             }
 
             ++index;
         }
 
-        if (orderTableIndex >= 0) {
-            String order = CommonUtil.decodeCP(encodingList.get(orderTableIndex + 1));
-            String[] splitParser = order.split(" ");
-            if (splitParser[0].indexOf("배달") >= 0) {
-                builder.orderCarryType("D"); // 배달
-            } else {
-                builder.orderCarryType("P"); // 포장
-            }
-            // 주문 번호 파싱
-            builder.orderNumber(splitParser[1]);
+        builder.orderNumber(CommonUtil.decodeCP(encodingList.get(2)).trim());
 
-            // 결제방식 파싱
-            order = CommonUtil.decodeCP(encodingList.get(orderTableIndex + 2));
-            builder.orderPayKind(this.convertOrderPayKind(order));
-        }
-
-        if (orderPhoneIndex >= 0) {
-            String order = CommonUtil.decodeCP(encodingList.get(orderPhoneIndex + 1));
-            builder.orderPhone(this.convertOrderPhone(order));
-        }
-
-        if (orderAppIndex >= 0) {
-            // 주문 일자
-            String order = CommonUtil.decodeCP(encodingList.get(orderAppIndex - 1));
-            builder.orderDate(this.convertOrderDate(order.trim()));
-            // 주문 매장
-            order = CommonUtil.decodeCP(encodingList.get(orderAppIndex - 2));
-            builder.orderStore(order.trim());
-        }
+        builder.orderCarryType("A");
 
         return builder.build();
     }
 
     private void parserMenu(String order, ServerRequestDTO.ServerRequestDTOBuilder builder, ArrayList<MenuDTO> menuList, StringBuilder orderMenu) {
-        if ((order.indexOf("메뉴명") >= 0 && order.indexOf("수량") >= 0 && order.indexOf("금액") >= 0)
+        if ((order.indexOf("메뉴") >= 0 && order.indexOf("수량") >= 0 && order.indexOf("금액") >= 0)
                 || order.indexOf("-----") >= 0
+                || order.indexOf(".....") >= 0
                 || order.indexOf("주문금액") >= 0
-                || order.indexOf("할인금액") >= 0
-                || order.indexOf("배달비") >= 0) {
+                || order.indexOf("배달비") >= 0
+                || order.indexOf("카드결제") >= 0) {
             // do nothing
-        } else if (order.startsWith(" +")) {
+        } else if (order.length() == 0) {
+            // 메뉴, 옵션 끝
+
+        } else if (order.startsWith("+ ") || (order.startsWith("  "))) {
             // 메뉴 옵션 파싱, 메뉴 수량 개행은 제외
             orderMenu.append(order); // 원본 메뉴
 
+            List<String> menuParsingList = new ArrayList<>();
+            for (String item : order.split("  ")) {
+                if (StringUtils.hasText(item.trim())) {
+                    menuParsingList.add(item.trim());
+                }
+            }
+
             MenuDTO menuDTO = menuList.get(menuList.size() - 1);
-            if (order.startsWith(" +")) {
+            if (menuParsingList.size() == 3) {
                 OptionDTO optionDTO = new OptionDTO();
                 optionDTO.setNum(String.valueOf(menuDTO.getOptionList().size() + 1));
-                optionDTO.setMenu(order.replace(" + ", ""));
-                this.parseOptionPrice(order.replace(" + ", ""), optionDTO);
+                optionDTO.setMenu(menuParsingList.get(0).replace("+ ", ""));
+                optionDTO.setQuantity(menuParsingList.get(1));
+                optionDTO.setPrice(this.convertPrice(menuParsingList.get(2)));
                 menuDTO.getOptionList().add(optionDTO);         // 메뉴에 옵션 추가
             } else { // 옵션 개행
-                // 마지막 option 가져오기
+                // 확인 안됨
                 OptionDTO optionDTO = menuDTO.getOptionList().get(menuDTO.getOptionList().size() - 1);
-                optionDTO.setMenu(optionDTO.getMenu() + order.trim());
-                this.parseOptionPrice(optionDTO.getMenu(), optionDTO);
+                optionDTO.setMenu(optionDTO.getMenu() + menuParsingList.get(0));
             }
-        } else if (order.indexOf("총 결제금액") >= 0) { // 메뉴 파싱 종료
+        } else if (order.indexOf("총결제금액") >= 0) { // 메뉴 파싱 종료
             builder.orderMenuList(menuList);
             builder.orderMenu(orderMenu.toString());
         } else { // 메뉴 파싱
@@ -230,7 +150,7 @@ public class ParserCPService {
 
         }
         if (menuParsingList.size() == 2) { //
-            // 할인 메뉴가 나열됨.
+
         }
         if (menuParsingList.size() == 3) { // 메뉴 파싱, 신규 메뉴 생성하고 리턴
             MenuDTO newMenuDTO = new MenuDTO();
@@ -275,7 +195,7 @@ public class ParserCPService {
     }
 
     private String convertOrderDate(String orderDate) {
-        return orderDate.replace(".", "").replace(":", "").replace(" ", "").trim();
+        return orderDate.replace("-", "").replace(":", "").replace(" ", "").trim();
     }
 
     private String convertOrderPhone(String orderPhone) {

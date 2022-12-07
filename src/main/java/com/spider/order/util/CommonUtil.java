@@ -225,6 +225,7 @@ public class CommonUtil {
         hexadecimal = hexadecimal.replace("1B2101", "");
         hexadecimal = hexadecimal.replace("1B40", "");
 
+        hexadecimal = hexadecimal.replace("1D2111", "");
         hexadecimal = hexadecimal.replace("1D2101", "");
 
         int len = hexadecimal.length();
