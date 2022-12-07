@@ -164,21 +164,27 @@ public class ParserTGService {
 
             MenuDTO menuDTO = menuList.get(menuList.size() - 1);
             if (order.startsWith("- ")) {
-                if (menuParsingList.size() == 1) {
+                // do nothing
+//                if (menuParsingList.size() == 1) {
+//                    OptionDTO optionDTO = new OptionDTO();
+//                    optionDTO.setNum(String.valueOf(menuDTO.getOptionList().size() + 1));
+//                    optionDTO.setMenu(order.replace("- ", ""));
+//                    menuDTO.getOptionList().add(optionDTO);         // 메뉴에 옵션 추가
+//                }
+            }
+            if (order.startsWith("  :")) { // 옵션
+                if (menuParsingList.size() == 3) {
                     OptionDTO optionDTO = new OptionDTO();
                     optionDTO.setNum(String.valueOf(menuDTO.getOptionList().size() + 1));
-                    optionDTO.setMenu(order.replace("- ", ""));
-                    menuDTO.getOptionList().add(optionDTO);         // 메뉴에 옵션 추가
-                }
-                log.info(menuDTO.toString());
-            } else { // 옵션 개행
-                if (menuParsingList.size() == 3) {
-                    OptionDTO optionDTO = menuDTO.getOptionList().get(menuDTO.getOptionList().size() - 1);
-                    optionDTO.setMenu(optionDTO.getMenu() + menuParsingList.get(0));
+                    optionDTO.setMenu(order.replaceAll("  :", "").replaceAll("^\\s+", ""));
                     optionDTO.setQuantity(menuParsingList.get(1));
                     optionDTO.setPrice(this.convertPrice(menuParsingList.get(2)));
+                    menuDTO.getOptionList().add(optionDTO);
+                } else { // 옵션 개행
+                    // 확인 안됨
+                    OptionDTO optionDTO = menuDTO.getOptionList().get(menuDTO.getOptionList().size() - 1);
+                    optionDTO.setMenu(optionDTO.getMenu() + menuParsingList.get(0));
                 }
-                log.info(menuDTO.toString());
             }
         } else if (order.indexOf("총 결제금액") >= 0) { // 메뉴 파싱 종료
             builder.orderMenuList(menuList);
