@@ -35,8 +35,23 @@ public class ParserCPService {
             log.info("decoded: {}", order);
 
             // 배달비 파싱
-            if (order.indexOf("배달비") >= 0) {
+            if (order.indexOf("배달비") >= 0 && order.indexOf("배달비할인") < 0) {
                 builder.orderFee(this.convertPrice(order.replace("배달비", "").trim()));
+            }
+            // 배달비할인 파싱: 배달비 - 배달비할인
+            if (order.indexOf("배달비할인") >= 0) {
+                String discount = this.convertPrice(order.replace("배달비할인", "").trim());
+                try {
+                    int fee = Integer.parseInt(builder.build().getOrderFee());
+                    int discountFee = Integer.parseInt(discount);
+                    builder.orderFee(String.valueOf(fee + discountFee));
+                } catch (Exception e) {
+
+                }
+            }
+
+            if (order.indexOf("할인금액") >= 0) {
+                builder.orderDiscount(this.convertPrice(order.replace("할인금액", "").trim()));
             }
 
             // 합계 파싱
@@ -52,6 +67,11 @@ public class ParserCPService {
             // 주문매장:
             if (order.indexOf("주문매장:") >= 0) {
                 builder.orderStore(order.replace("주문매장:", "").trim());
+            }
+
+            // 결제방식::
+            if (order.indexOf("결제방식:") >= 0) {
+                builder.orderPayKind(this.convertOrderPayKind(order.replace("결제방식:", "").trim()));
             }
 
             // 원산지 파싱
@@ -81,9 +101,8 @@ public class ParserCPService {
             ++index;
         }
 
-        builder.orderNumber(CommonUtil.decodeCP(encodingList.get(2)).trim());
-
-        builder.orderCarryType("A");
+        // 주문번호, 앞에 쿠팡잇츠1이 들어가면 포장
+        this.convertOrderNumber(CommonUtil.decodeCP(encodingList.get(2)), builder);
 
         return builder.build();
     }
@@ -94,7 +113,8 @@ public class ParserCPService {
                 || order.indexOf(".....") >= 0
                 || order.indexOf("주문금액") >= 0
                 || order.indexOf("배달비") >= 0
-                || order.indexOf("카드결제") >= 0) {
+                || order.indexOf("할인") >= 0
+                || (order.indexOf("결제") >= 0 && order.indexOf("총결제금액") < 0)) {
             // do nothing
         } else if (order.length() == 0) {
             // 메뉴, 옵션 끝
@@ -194,13 +214,23 @@ public class ParserCPService {
         }
     }
 
+    private void convertOrderNumber(String order, ServerRequestDTO.ServerRequestDTOBuilder builder) {
+        if (order.indexOf("쿠팡이츠 1") >= 0) {
+            builder.orderCarryType("P");
+
+        } else {
+            builder.orderCarryType("D");
+        }
+        builder.orderNumber(order.replace("쿠팡이츠 1", "").replace("(", "").replace(")", "").trim());
+    }
+
     private String convertOrderDate(String orderDate) {
         return orderDate.replace("-", "").replace(":", "").replace(" ", "").trim();
     }
 
     private String convertOrderPhone(String orderPhone) {
         // 구배민 (안심번호)050-71252-9487 => 050712529487
-        return orderPhone.replace("(안심번호)", "").replace("-", "").split("\n")[0];
+        return orderPhone.replace("(안심번호)", "").replace("-", "");
     }
 
     private String convertPrice(String price) {
@@ -208,7 +238,7 @@ public class ParserCPService {
     }
 
     private String convertOrderPayKind(String order) {
-        if (order.indexOf("결제완료") >= 0) {
+        if (order.indexOf("결제 완료") >= 0) {
             return "사전";
         } else if (order.indexOf("현금") >= 0) {
             return "현금";

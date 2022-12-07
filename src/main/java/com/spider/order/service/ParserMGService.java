@@ -29,6 +29,15 @@ public class ParserMGService {
             String order = CommonUtil.decodeMG(encoded);
             log.info("decoded: {}", order);
 
+            // 배달계산서, 포장계산서
+            if (order.indexOf("계산서") >= 0) {
+                if (order.indexOf("배달") >= 0) {
+                    builder.orderCarryType("D");
+                } else if (order.indexOf("포장") >= 0) {
+                    builder.orderCarryType("P");
+                }
+            }
+
             // 주문 번호
             if (order.indexOf("No:") >= 0) {
                 builder.orderNumber(order.replace("No:", "").replaceAll("^\\s+", ""));
@@ -98,6 +107,11 @@ public class ParserMGService {
                 }
             }
 
+            // 결제 여부
+            if (order.indexOf("먹깨비") >= 0) {
+                builder.orderPayKind(this.convertOrderPayKind(order));
+            }
+
             // 메뉴 리스트 파싱
             if (order.indexOf("주문내역") >= 0) {
                 menuList = new ArrayList<>();
@@ -112,9 +126,7 @@ public class ParserMGService {
             ++index;
         }
 
-        builder.orderDate(this.convertOrderDate(CommonUtil.decodeMG(encodingList.get(2))));
-
-        builder.orderCarryType("A");
+        builder.orderDate(this.convertOrderDate(CommonUtil.decodeMG(encodingList.get(2)).replace("포장:", "")));
 
         return builder.build();
     }
