@@ -101,8 +101,10 @@ public class ParserCPService {
             ++index;
         }
 
-        // 주문번호, 앞에 쿠팡잇츠1이 들어가면 포장
+        // 주문번호
         this.convertOrderNumber(CommonUtil.decodeCP(encodingList.get(2)), builder);
+
+        builder.orderCarryType("A");
 
         return builder.build();
     }
@@ -215,12 +217,6 @@ public class ParserCPService {
     }
 
     private void convertOrderNumber(String order, ServerRequestDTO.ServerRequestDTOBuilder builder) {
-        if (order.indexOf("쿠팡이츠 1") >= 0) {
-            builder.orderCarryType("P");
-
-        } else {
-            builder.orderCarryType("D");
-        }
         builder.orderNumber(order.replace("쿠팡이츠 1", "").replace("(", "").replace(")", "").trim());
     }
 

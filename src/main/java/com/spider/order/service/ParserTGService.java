@@ -30,6 +30,14 @@ public class ParserTGService {
             String order = CommonUtil.decodeTG(encoded);
             log.info("decoded: {}", order);
 
+            if (order.indexOf("배달특급") >= 0) {
+                if (order.indexOf("포장") >= 0) {
+                    builder.orderCarryType("P");
+                } else {
+                    builder.orderCarryType("D");
+                }
+            }
+
             // 상호
             if (order.indexOf("상      호 :") >= 0) {
                 builder.orderStore(order.replace("상      호 :", "").trim());
@@ -139,8 +147,6 @@ public class ParserTGService {
 
             ++index;
         }
-
-        builder.orderCarryType("A");
 
         return builder.build();
     }
