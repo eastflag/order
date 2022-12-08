@@ -74,6 +74,7 @@ public class OrderController {
                 serverRequestDTO.setClientToken(agentRequestDTO.getClientToken());
                 serverRequestDTO.setServiceProvider(agentRequestDTO.getServiceProvider());
                 serverRequestDTO.setClientName(agentRequestDTO.getClientName());
+                serverRequestDTO.setHexaData(hexadecimal);
             }
 
             ServerResponseDTO serverResponseDTO = orderFeignClient.postNewOrder(serverRequestDTO);
