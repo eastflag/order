@@ -19,6 +19,7 @@ public class ParserMGService {
         ServerRequestDTO.ServerRequestDTOBuilder builder = ServerRequestDTO.builder();
         String originalJibunAddress = null;
         String shopRemark = null;
+        String orderRemark = null;
         String ingredientOrigins = null;
         ArrayList<MenuDTO> menuList = null;
         StringBuilder orderMenu = new StringBuilder();
@@ -53,7 +54,7 @@ public class ParserMGService {
                 originalJibunAddress = "";
             }
             if (originalJibunAddress != null) {
-                if (order.indexOf("매장:") >= 0) {
+                if (order.indexOf("사업자정보") >= 0) { // 규격 바뀜, 매장이 내려감.
                     // 지번 주소 끝
                     builder.originalJibunAddress(originalJibunAddress);
                     originalJibunAddress = null;
@@ -68,11 +69,24 @@ public class ParserMGService {
                 shopRemark = "";
             }
             if (shopRemark != null) {
-                if (order.indexOf("사업자정보") >= 0) { // 포장의 경우 고려
+                if (order.indexOf("기사님 요청:") >= 0 || order.indexOf("먹깨비") >= 0) { // 기사요청 없는 경우 고려
                     builder.shopRemark(shopRemark);
                     shopRemark = null;
                 } else {
                     shopRemark += order.replace("매장: ", "");
+                }
+            }
+
+            // 배달 요청 사항
+            if (order.indexOf("기사님 요청:") >= 0) {
+                orderRemark = "";
+            }
+            if (orderRemark != null) {
+                if (order.indexOf("먹깨비") >= 0) { // 파싱 종료
+                    builder.orderRemark(orderRemark);
+                    orderRemark = null;
+                } else {
+                    orderRemark += order.replace("기사님 요청: ", "");
                 }
             }
 
@@ -93,19 +107,19 @@ public class ParserMGService {
             }
 
             // 원산지 파싱
-            if (order.indexOf("합계") >= 0) {
-                ingredientOrigins = "";
-            }
-            if (ingredientOrigins != null) {
-                if (order.indexOf("합계") >= 0 || order.indexOf("=====") >= 0) {
-
-                } else if (order.indexOf("먹깨비") >= 0) { // 종료
-                    builder.ingredientOrigins(ingredientOrigins.trim());
-                    ingredientOrigins = null;
-                } else {
-                    ingredientOrigins += order;
-                }
-            }
+//            if (order.indexOf("합계") >= 0) {
+//                ingredientOrigins = "";
+//            }
+//            if (ingredientOrigins != null) {
+//                if (order.indexOf("합계") >= 0 || order.indexOf("=====") >= 0) {
+//
+//                } else if (order.indexOf("먹깨비") >= 0) { // 종료
+//                    builder.ingredientOrigins(ingredientOrigins.trim());
+//                    ingredientOrigins = null;
+//                } else {
+//                    ingredientOrigins += order;
+//                }
+//            }
 
             // 결제 여부
             if (order.indexOf("먹깨비") >= 0) {
@@ -126,7 +140,7 @@ public class ParserMGService {
             ++index;
         }
 
-        builder.orderDate(this.convertOrderDate(CommonUtil.decodeMG(encodingList.get(2)).replace("포장:", "")));
+        builder.orderDate(this.convertOrderDate(CommonUtil.decodeMG(encodingList.get(2))));
 
         return builder.build();
     }
@@ -149,12 +163,14 @@ public class ParserMGService {
             }
 
             MenuDTO menuDTO = menuList.get(menuList.size() - 1);
-            if (menuParsingList.size() == 3) {
+            if (menuParsingList.size() >= 2) {
                 OptionDTO optionDTO = new OptionDTO();
                 optionDTO.setNum(String.valueOf(menuDTO.getOptionList().size() + 1));
                 optionDTO.setMenu(menuParsingList.get(0).replace("+", "").replaceAll("^\\s+", ""));
                 optionDTO.setQuantity(menuParsingList.get(1));
-                optionDTO.setPrice(this.convertPrice(menuParsingList.get(2)));
+                if (menuParsingList.size() == 3) {
+                    optionDTO.setPrice(this.convertPrice(menuParsingList.get(2)));
+                }
                 menuDTO.getOptionList().add(optionDTO);
             }
             if (menuParsingList.size() == 1) { // 옵션 개행
@@ -234,12 +250,11 @@ public class ParserMGService {
     }
 
     private String convertOrderDate(String orderDate) {
-        return orderDate.replace("-", "").replace(":", "").replace(" ", "").trim();
+        return orderDate.replace("배달", "").replace("포장", "").replace("-", "").replace(":", "").replace(" ", "").trim();
     }
 
     private String convertOrderPhone(String orderPhone) {
-        // 구배민 (안심번호)050-71252-9487 => 050712529487
-        return orderPhone.replace("(안심번호)", "").replace("-", "").split("\n")[0];
+        return orderPhone.replace("(안심번호)", "").replace("-", "");
     }
 
     private String convertPrice(String price) {
