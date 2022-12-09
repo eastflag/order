@@ -154,11 +154,11 @@ public class ParserTGService {
     private void parserMenu(String order, ServerRequestDTO.ServerRequestDTOBuilder builder, ArrayList<MenuDTO> menuList, StringBuilder orderMenu) {
         if ((order.indexOf("메 뉴 명") >= 0 && order.indexOf("수 량") >= 0 && order.indexOf("금 액") >= 0)
                 || order.indexOf("-----") >= 0
-                || order.indexOf("이벤트 할인") >= 0
+                || order.indexOf("할인") >= 0
                 || order.indexOf("배달비") >= 0
-                || order.startsWith("- ")) {
+                || order.indexOf("쿠폰") >= 0) {
             // do nothing
-        } else if (order.startsWith("  :") || (order.startsWith("   ") && !order.startsWith("     "))) {
+        } else if (order.startsWith("- ") || order.startsWith("  :") || (order.startsWith("   "))) {
             // 메뉴 옵션 파싱, 메뉴 수량 개행은 제외
             orderMenu.append(order); // 원본 메뉴
 
@@ -170,7 +170,10 @@ public class ParserTGService {
             }
 
             MenuDTO menuDTO = menuList.get(menuList.size() - 1);
-            if (order.startsWith("  :")) { // 옵션
+            if (order.startsWith("- ")) {
+                // do nothing
+
+            } else if (order.startsWith("  :")) { // 옵션
                 if (menuParsingList.size() == 3) {
                     OptionDTO optionDTO = new OptionDTO();
                     optionDTO.setNum(String.valueOf(menuDTO.getOptionList().size() + 1));
@@ -179,10 +182,11 @@ public class ParserTGService {
                     optionDTO.setPrice(this.convertPrice(menuParsingList.get(2)));
                     menuDTO.getOptionList().add(optionDTO);
                 }
-            } else { // 옵션 개행
-                // 확인 안됨
-                OptionDTO optionDTO = menuDTO.getOptionList().get(menuDTO.getOptionList().size() - 1);
-                optionDTO.setMenu(optionDTO.getMenu() + menuParsingList.get(0));
+            } else { // 옵션 개행, - 개행일 경우 optionList가 한개이상 잇는지 체크
+                if (menuDTO.getOptionList().size() > 0) {
+                    OptionDTO optionDTO = menuDTO.getOptionList().get(menuDTO.getOptionList().size() - 1);
+                    optionDTO.setMenu(optionDTO.getMenu() + menuParsingList.get(0));
+                }
             }
         } else if (order.indexOf("총 결제금액") >= 0) { // 메뉴 파싱 종료
             builder.orderMenuList(menuList);
@@ -210,8 +214,16 @@ public class ParserTGService {
         if (menuParsingList.size() == 1) { // 메뉴명 개행
             menuDTO.setMenu(menuDTO.getMenu() + order);
         }
-        if (menuParsingList.size() == 2) { // 파악 안됨
-
+        if (menuParsingList.size() == 2) { // 예외처리:   짜글이       1 18,000
+            String tempOption[] = menuParsingList.get(1).split(" ");
+            MenuDTO newMenuDTO = new MenuDTO();
+            newMenuDTO.setNum(String.valueOf(menuList.size() + 1));
+            newMenuDTO.setOptionList(new ArrayList<>());
+            newMenuDTO.setMenu(menuParsingList.get(0));
+            newMenuDTO.setQuantity(tempOption[0].trim());
+            newMenuDTO.setPrice(this.convertPrice(tempOption[1].trim()));
+            // 메뉴 리스트에 메뉴 추가
+            menuList.add(newMenuDTO);
         }
         if (menuParsingList.size() == 3) { // 메뉴 파싱, 신규 메뉴 생성하고 리턴
             MenuDTO newMenuDTO = new MenuDTO();
@@ -223,6 +235,18 @@ public class ParserTGService {
             // 메뉴 리스트에 메뉴 추가
             menuList.add(newMenuDTO);
         }
+        if (menuParsingList.size() == 4) { // 메뉴 파싱, 메뉴명에 스페이스 2개가 있는 경우: 자담 오리지널 100  (100g      1      4,000
+            MenuDTO newMenuDTO = new MenuDTO();
+            newMenuDTO.setNum(String.valueOf(menuList.size() + 1));
+            newMenuDTO.setOptionList(new ArrayList<>());
+            newMenuDTO.setMenu(menuParsingList.get(0) + " " +
+                    menuParsingList.get(1));
+            newMenuDTO.setQuantity(menuParsingList.get(2));
+            newMenuDTO.setPrice(this.convertPrice(menuParsingList.get(3)));
+            // 메뉴 리스트에 메뉴 추가
+            menuList.add(newMenuDTO);
+        }
+        // 5 이상이 있을까?
     }
 
     private void parseOptionPrice(String order, OptionDTO optionDTO) {
