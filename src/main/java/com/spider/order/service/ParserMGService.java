@@ -151,7 +151,7 @@ public class ParserMGService {
                 || order.indexOf("=====") >= 0
                 || order.indexOf("배달팁") >= 0) {
             // do nothing
-        } else if (order.startsWith(" +") || order.startsWith("  ")) {
+        } else if (order.startsWith(" +") || (order.startsWith("  ") && !order.startsWith("        "))) {
             // 메뉴 옵션 파싱, 메뉴 수량 개행은 제외
             orderMenu.append(order); // 원본 메뉴
 
@@ -201,11 +201,16 @@ public class ParserMGService {
             }
         }
 
-        if (menuParsingList.size() == 1) { // 존재 안함.
-
+        if (menuParsingList.size() == 1) { // 메뉴명이 긴 경우
+            MenuDTO newMenuDTO = new MenuDTO();
+            newMenuDTO.setNum(String.valueOf(menuList.size() + 1));
+            newMenuDTO.setOptionList(new ArrayList<>());
+            newMenuDTO.setMenu(menuParsingList.get(0));
+            menuList.add(newMenuDTO);             // 메뉴 리스트에 메뉴 추가
         }
-        if (menuParsingList.size() == 2) { //
-            // 할인 메뉴가 나열됨.
+        if (order.startsWith("        ") && menuParsingList.size() == 2) { // 수량, 가격이 개행
+            menuDTO.setQuantity(menuParsingList.get(0));
+            menuDTO.setPrice(this.convertPrice(menuParsingList.get(1)));
         }
         if (menuParsingList.size() == 3) { // 메뉴 파싱, 신규 메뉴 생성하고 리턴
             MenuDTO newMenuDTO = new MenuDTO();
