@@ -117,6 +117,7 @@ public class ServerRequestDTO {
     @JsonProperty("OrderMenuList")
     private ArrayList<MenuDTO> orderMenuList;                // "",                     // 원본메뉴
 
+    @Builder.Default
     @JsonProperty("HexaData")
     private String hexaData = "";
 }

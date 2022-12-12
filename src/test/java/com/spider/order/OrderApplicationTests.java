@@ -101,6 +101,10 @@ class OrderApplicationTests {
         String hh = orderDate.substring(19, 21);
         String mm = orderDate.substring(22);
 
+        if (hh.equals("12")) {
+            hh = "00";
+        }
+
         if (amPm.indexOf("오후") >= 0) {
             int intHH = Integer.parseInt(hh) + 12;
             hh = String.valueOf(intHH);
