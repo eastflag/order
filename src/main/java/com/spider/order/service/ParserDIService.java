@@ -90,6 +90,7 @@ public class ParserDIService {
             ++index;
         }
 
+        builder.orderPayKind("사전");
         builder.orderCarryType("A");
 
         return builder.build();
